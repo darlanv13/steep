@@ -206,7 +206,18 @@ class _MainLayoutState extends State<MainLayout> {
                 ),
 
                 // Conteúdo Injetado (Telas)
-                Expanded(child: _screens[_selectedIndex]),
+                Expanded(
+                  child: Consumer<FilterProvider>(
+                    builder: (context, filterProvider, child) {
+                      if (filterProvider.isLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: AppTheme.verdeVale),
+                        );
+                      }
+                      return _screens[_selectedIndex];
+                    },
+                  ),
+                ),
               ],
             ),
           ),

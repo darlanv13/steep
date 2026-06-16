@@ -34,6 +34,18 @@ class CrossAnalyticsScreen extends StatelessWidget {
                   Expanded(
                     child: ScatterChart(
                       ScatterChartData(
+                        scatterTouchData: ScatterTouchData(
+                          enabled: true,
+                          handleBuiltInTouches: true,
+                          touchTooltipData: ScatterTouchTooltipData(
+                            getTooltipItems: (ScatterSpot touchedBarSpot) {
+                              return ScatterTooltipItem(
+                                'Operador\nFadiga: ${touchedBarSpot.x.toInt()}\nFreadas: ${touchedBarSpot.y.toInt()}',
+                                textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              );
+                            },
+                          ),
+                        ),
                         scatterSpots: [
                           ScatterSpot(
                             2,
