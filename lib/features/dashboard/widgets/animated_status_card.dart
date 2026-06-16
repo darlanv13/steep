@@ -5,14 +5,13 @@ class AnimatedStatusCard extends StatefulWidget {
   final String driverName;
   final String vehicleId;
 
-  const AnimatedStatusCard({
-    Key? key,
+  const AnimatedStatusCard({super.key,
     required this.driverName,
     required this.vehicleId,
-  }) : super(key: key);
+  });
 
   @override
-  _AnimatedStatusCardState createState() => _AnimatedStatusCardState();
+  State<AnimatedStatusCard> createState() => _AnimatedStatusCardState();
 }
 
 class _AnimatedStatusCardState extends State<AnimatedStatusCard> {
@@ -42,7 +41,7 @@ class _AnimatedStatusCardState extends State<AnimatedStatusCard> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

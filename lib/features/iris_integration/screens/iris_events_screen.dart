@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/app_theme.dart';
 
 class IrisEventsScreen extends StatelessWidget {
-  const IrisEventsScreen({Key? key}) : super(key: key);
+  const IrisEventsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +97,7 @@ class IrisEventsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
+                color: statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

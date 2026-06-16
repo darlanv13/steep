@@ -5,10 +5,6 @@ import '../core/app_theme.dart';
 import '../core/providers/filter_provider.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
 import '../features/quality_analysis/screens/advanced_quality_screen.dart';
-import '../features/dashboard/screens/geofence_screen.dart';
-import '../features/checklist/screens/checklist_screen.dart';
-import '../features/document_control/screens/document_control_screen.dart';
-import '../features/iris_integration/screens/iris_events_screen.dart';
 import '../features/continuous_improvement/screens/action_plan_screen.dart';
 import '../features/continuous_improvement/screens/risk_heatmap_screen.dart';
 import '../features/continuous_improvement/screens/cost_analysis_screen.dart';
@@ -16,7 +12,7 @@ import '../features/maintenance/screens/predictive_maintenance_screen.dart';
 import '../features/cross_analytics/screens/cross_analytics_screen.dart';
 
 class MainLayout extends StatefulWidget {
-  const MainLayout({super.key});
+  const MainLayout({Key? key}) : super(key: key);
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
@@ -27,10 +23,10 @@ class _MainLayoutState extends State<MainLayout> {
 
   final List<Widget> _screens = [
     const DashboardScreen(),
-    const GeofenceScreen(),
-    const ChecklistScreen(),
-    const DocumentControlScreen(),
-    const IrisEventsScreen(),
+    const Center(child: Text("Rotogramas e Cercas (Em desenvolvimento)")),
+    const Center(child: Text("Inspeção Pré-Uso (Em desenvolvimento)")),
+    const Center(child: Text("Controle Documental (Em desenvolvimento)")),
+    const Center(child: Text("Eventos IRIS (Em desenvolvimento)")),
     const AdvancedQualityScreen(),
     const ActionPlanScreen(),
     const RiskHeatmapScreen(),

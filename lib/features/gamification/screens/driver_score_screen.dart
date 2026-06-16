@@ -193,8 +193,8 @@ class DriverScoreScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
                   color: isAtRisk
-                      ? AppTheme.alertaCritico.withOpacity(0.1)
-                      : AppTheme.sucesso.withOpacity(0.1),
+                      ? AppTheme.alertaCritico.withValues(alpha: 0.1)
+                      : AppTheme.sucesso.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 alignment: Alignment.center,

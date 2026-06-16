@@ -1,0 +1,42 @@
+--- lib/features/continuous_improvement/screens/action_plan_screen.dart
++++ lib/features/continuous_improvement/screens/action_plan_screen.dart
+@@ -19,12 +19,16 @@
+   @override
+   void initState() {
+     super.initState();
+-    _loadData();
+   }
+
+-  Future<void> _loadData() async {
++  @override
++  void didChangeDependencies() {
++    super.didChangeDependencies();
++    final filter = Provider.of<FilterProvider>(context, listen: true);
++    _loadData(filter);
++  }
++
++  Future<void> _loadData(FilterProvider filter) async {
+     setState(() => _isLoading = true);
+-    final filter = Provider.of<FilterProvider>(context, listen: false);
+     final service = Provider.of<DataService>(context, listen: false);
+
+     final data = await service.getActionPlans(filter.shift, filter.fleet, filter.period);
+@@ -87,7 +91,7 @@
+                   Navigator.of(context).pop();
+
+                   await service.addActionPlan(newPlan);
+-                  await _loadData();
++                  await _loadData(filter);
+
+                   if (mounted) {
+                      scaffoldMessenger.showSnackBar(
+@@ -107,9 +111,6 @@
+
+   @override
+   Widget build(BuildContext context) {
+-    // Reage às mudanças de filtro global recarregando os dados
+-    Provider.of<FilterProvider>(context, listen: true);
+-
+     return Padding(
+       padding: const EdgeInsets.all(32),
+       child: Container(

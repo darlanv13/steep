@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CriticalAlertTrigger extends StatelessWidget {
-  const CriticalAlertTrigger({Key? key}) : super(key: key);
+  const CriticalAlertTrigger({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class CriticalAlertTrigger extends StatelessWidget {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.8),
+      barrierColor: Colors.black.withValues(alpha: 0.8),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, animation, secondaryAnimation) {
         return ScaleTransition(
@@ -47,7 +47,7 @@ class CriticalAlertTrigger extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE74C3C).withOpacity(0.1),
+                    color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const FaIcon(

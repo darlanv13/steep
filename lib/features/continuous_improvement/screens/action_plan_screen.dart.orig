@@ -23,27 +23,12 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
   @override
   void initState() {
     super.initState();
+    _loadData();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final filter = Provider.of<FilterProvider>(context, listen: true);
-    _loadData(filter);
-  }
-
-  Future<void> _loadData(FilterProvider filter) async {
-    // Avoid setting state if the widget was disposed
-    if (!mounted) return;
-
-    // We only set loading if we don't already have plans to prevent flashing, or if it's the first load
-    if (_plans.isEmpty) {
-        // Can't set state during build phase, and didChangeDependencies could be called during build
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() => _isLoading = true);
-        });
-    }
-
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    final filter = Provider.of<FilterProvider>(context, listen: false);
     final service = Provider.of<DataService>(context, listen: false);
 
     final data = await service.getActionPlans(filter.shift, filter.fleet, filter.period);
@@ -90,7 +75,6 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                 if (_formKey.currentState!.validate()) {
                   final filter = Provider.of<FilterProvider>(context, listen: false);
                   final service = Provider.of<DataService>(context, listen: false);
-                  final scaffoldMessenger = ScaffoldMessenger.of(context);
 
                   final newPlan = {
                     'title': _titleController.text,
@@ -105,10 +89,10 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                   Navigator.of(context).pop();
 
                   await service.addActionPlan(newPlan);
-                  await _loadData(filter);
+                  await _loadData();
 
                   if (mounted) {
-                     scaffoldMessenger.showSnackBar(
+                     ScaffoldMessenger.of(context).showSnackBar(
                        const SnackBar(content: Text('Plano adicionado e sincronizado com Firestore!')),
                      );
                   }
@@ -127,6 +111,9 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Reage às mudanças de filtro global recarregando os dados
+    Provider.of<FilterProvider>(context, listen: true);
+
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Container(
@@ -157,7 +144,7 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
             ),
             const SizedBox(height: 32),
             Expanded(
-              child: _isLoading && _plans.isEmpty
+              child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _plans.isEmpty
                       ? const Center(child: Text("Nenhum plano encontrado para este filtro."))

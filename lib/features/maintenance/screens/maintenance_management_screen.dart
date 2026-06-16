@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/app_theme.dart';
 
 class MaintenanceManagementScreen extends StatelessWidget {
-  const MaintenanceManagementScreen({Key? key}) : super(key: key);
+  const MaintenanceManagementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class MaintenanceManagementScreen extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.sucesso.withOpacity(0.1),
+                  color: AppTheme.sucesso.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Row(

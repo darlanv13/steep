@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DmsDetailScreen extends StatelessWidget {
   final String eventId;
 
-  const DmsDetailScreen({Key? key, required this.eventId}) : super(key: key);
+  const DmsDetailScreen({super.key, required this.eventId});
 
   @override
   Widget build(BuildContext context) {

@@ -40,10 +40,10 @@ class RiskHeatmapScreen extends StatelessWidget {
                         Color cellColor = AppTheme.background;
                         String label = "Seguro";
                         if (index == 7 || index == 12) {
-                          cellColor = AppTheme.alertaCritico.withOpacity(0.8);
+                          cellColor = AppTheme.alertaCritico.withValues(alpha: 0.8);
                           label = "Risco Alto\n(DMS)";
                         } else if (index == 2 || index == 21 || index == 22) {
-                          cellColor = AppTheme.amareloVale.withOpacity(0.8);
+                          cellColor = AppTheme.amareloVale.withValues(alpha: 0.8);
                           label = "Atenção\n(Buracos)";
                         }
 

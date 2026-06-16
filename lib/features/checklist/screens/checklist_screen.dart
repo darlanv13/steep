@@ -4,17 +4,20 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/app_theme.dart';
 
 class ChecklistScreen extends StatelessWidget {
-  const ChecklistScreen({Key? key}) : super(key: key);
+  const ChecklistScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
     return Padding(
       padding: const EdgeInsets.all(32),
-      child: Row(
+      child: Flex(
+        direction: isDesktop ? Axis.horizontal : Axis.vertical,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            flex: 2,
+            flex: isDesktop ? 2 : 0,
             child: Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
@@ -23,6 +26,7 @@ class ChecklistScreen extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
                     "Checklist Veicular (RAC 02)",
@@ -49,7 +53,7 @@ class ChecklistScreen extends StatelessWidget {
                     true,
                   ),
 
-                  const Spacer(),
+                  const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -79,8 +83,11 @@ class ChecklistScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 32),
-          Expanded(flex: 1, child: _buildConformidadePainel()),
+          if (isDesktop) const SizedBox(width: 32) else const SizedBox(height: 32),
+          Expanded(
+            flex: isDesktop ? 1 : 0,
+            child: _buildConformidadePainel()
+          ),
         ],
       ),
     );
@@ -126,7 +133,7 @@ class ChecklistScreen extends StatelessWidget {
           ),
           Switch(
             value: isApproved,
-            activeColor: AppTheme.sucesso,
+            activeThumbColor: AppTheme.sucesso,
             inactiveThumbColor: AppTheme.alertaCritico,
             onChanged: (val) {},
           ),
@@ -144,6 +151,7 @@ class ChecklistScreen extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             "Status do Condutor",

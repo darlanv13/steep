@@ -7,16 +7,19 @@ class GeofenceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
     return Padding(
       padding: const EdgeInsets.all(32),
-      child: Row(
+      child: Flex(
+        direction: isDesktop ? Axis.horizontal : Axis.vertical,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Área do Mapa (Simulação Visual)
           Expanded(
-            flex: 2,
+            flex: isDesktop ? 2 : 0,
             child: Container(
-              height: double.infinity,
+              height: isDesktop ? double.infinity : 400,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -46,12 +49,13 @@ class GeofenceScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 32),
+          if (isDesktop) const SizedBox(width: 32) else const SizedBox(height: 32),
           // Painel de Controle de Cercas
           Expanded(
-            flex: 1,
+            flex: isDesktop ? 1 : 0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
                   "Zonas de Controle Ativas",
@@ -111,7 +115,7 @@ class GeofenceScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.amareloVale.withOpacity(0.1),
+        color: AppTheme.amareloVale.withValues(alpha: 0.1),
         border: Border(left: BorderSide(color: AppTheme.amareloVale, width: 4)),
         borderRadius: BorderRadius.circular(8),
       ),

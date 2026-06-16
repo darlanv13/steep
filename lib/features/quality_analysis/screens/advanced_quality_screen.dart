@@ -4,7 +4,7 @@ import '../../../core/app_theme.dart';
 import '../../../core/services/pdf_service.dart';
 
 class AdvancedQualityScreen extends StatelessWidget {
-  const AdvancedQualityScreen({Key? key}) : super(key: key);
+  const AdvancedQualityScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

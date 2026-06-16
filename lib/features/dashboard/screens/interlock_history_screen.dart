@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/app_theme.dart';
 
 class InterlockHistoryScreen extends StatelessWidget {
-  const InterlockHistoryScreen({Key? key}) : super(key: key);
+  const InterlockHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

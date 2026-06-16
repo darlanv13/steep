@@ -7,6 +7,8 @@ class DocumentControlScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -15,9 +17,11 @@ class DocumentControlScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "Mobilização PNR-000067",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              const Flexible(
+                child: Text(
+                  "Mobilização PNR-000067",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
               ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
@@ -38,18 +42,21 @@ class DocumentControlScreen extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           Expanded(
-            child: Row(
+            child: Flex(
+              direction: isDesktop ? Axis.horizontal : Axis.vertical,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
+                  flex: isDesktop ? 1 : 0,
                   child: _buildDossierPanel(
                     "Condutores (SSMA)",
                     true,
                     FontAwesomeIcons.idCard,
                   ),
                 ),
-                const SizedBox(width: 32),
+                if (isDesktop) const SizedBox(width: 32) else const SizedBox(height: 32),
                 Expanded(
+                  flex: isDesktop ? 1 : 0,
                   child: _buildDossierPanel(
                     "Frota (Selos e Vistorias)",
                     false,
@@ -77,16 +84,19 @@ class DocumentControlScreen extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
               FaIcon(faIconData, color: AppTheme.textoPrincipal),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Flexible(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -132,7 +142,10 @@ class DocumentControlScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Flexible(
+            child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+          ),
+          const SizedBox(width: 8),
           Row(
             children: [
               Text(

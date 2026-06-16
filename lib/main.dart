@@ -4,7 +4,7 @@ import 'core/app_theme.dart';
 import 'core/providers/filter_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/services/data_service.dart';
-import 'core/services/mock_data_service.dart';
+import 'core/services/firebase_data_service.dart';
 import 'layout/main_layout.dart';
 
 void main() async {
@@ -15,7 +15,7 @@ void main() async {
   try {
     await Firebase.initializeApp();
   } catch (e) {
-    print(
+    debugPrint(
       "Firebase initialization failed. Please run 'flutterfire configure'. Error: $e",
     );
   }
@@ -24,7 +24,7 @@ void main() async {
     MultiProvider(
       providers: [
         Provider<DataService>(
-          create: (_) => MockDataService(),
+          create: (_) => FirebaseDataService(),
         ), // To use firebase, swap to FirebaseDataService()
         ChangeNotifierProvider(create: (_) => FilterProvider()),
       ],
@@ -34,7 +34,7 @@ void main() async {
 }
 
 class SgsvApp extends StatelessWidget {
-  const SgsvApp({Key? key}) : super(key: key);
+  const SgsvApp({super.key});
 
   @override
   Widget build(BuildContext context) {

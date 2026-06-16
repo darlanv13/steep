@@ -5,8 +5,20 @@ import 'package:steep/main.dart';
 import 'package:steep/core/providers/filter_provider.dart';
 import 'package:steep/core/services/data_service.dart';
 import 'package:steep/core/services/mock_data_service.dart';
+import 'dart:io';
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
 
 void main() {
+  setUpAll(() {
+    HttpOverrides.global = MyHttpOverrides();
+  });
   testWidgets('App should load main layout without crashing', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(
@@ -33,6 +45,8 @@ void main() {
         child: const SgsvApp(),
       ),
     );
+
+    await tester.pumpAndSettle();
 
     // O DashboardScreen (renderizado inicialmente) possui NetworkImages não mockadas que falham em ambiente de teste com status 400.
     // Ignoramos a falha do widget_test pois a renderização da imagem de placeholder nativa do projeto anterior causa exceptions,
