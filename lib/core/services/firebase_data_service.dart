@@ -34,4 +34,44 @@ class FirebaseDataService implements DataService {
     // Ao inserir em uma coleção que não existe, o Firestore a cria automaticamente
     await _firestore.collection('action_plans').add(plan);
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getChecklists(String shift, String fleet) async {
+    try {
+      final snapshot = await _firestore.collection('checklists').where('shift', isEqualTo: shift).where('fleet', isEqualTo: fleet).get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getComplianceData(String fleet) async {
+    try {
+      final snapshot = await _firestore.collection('compliance_data').where('fleet', isEqualTo: fleet).get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getGeofences() async {
+    try {
+      final snapshot = await _firestore.collection('geofences').get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getIrisEvents() async {
+    try {
+      final snapshot = await _firestore.collection('iris_events').get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      return [];
+    }
+  }
 }

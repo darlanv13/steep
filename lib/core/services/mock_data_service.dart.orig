@@ -53,24 +53,4 @@ class MockDataService implements DataService {
     await Future.delayed(const Duration(milliseconds: 500));
     _plans.add(plan);
   }
-
-  @override
-  Future<List<Map<String, dynamic>>> getChecklists(String shift, String fleet) async {
-    return [];
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getComplianceData(String fleet) async {
-    return [];
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getGeofences() async {
-    return [];
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getIrisEvents() async {
-    return [];
-  }
 }

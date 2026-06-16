@@ -1,10 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/app_theme.dart';
+import '../../../core/providers/filter_provider.dart';
+import '../../../core/services/data_service.dart';
 
-class ChecklistScreen extends StatelessWidget {
+class ChecklistScreen extends StatefulWidget {
   const ChecklistScreen({super.key});
+
+  @override
+  State<ChecklistScreen> createState() => _ChecklistScreenState();
+}
+
+class _ChecklistScreenState extends State<ChecklistScreen> {
+  List<Map<String, dynamic>> _checklists = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final filter = Provider.of<FilterProvider>(context, listen: true);
+    _loadData(filter);
+  }
+
+  Future<void> _loadData(FilterProvider filter) async {
+    if (!mounted) return;
+
+    if (_checklists.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() => _isLoading = true);
+        });
+    }
+
+    final service = Provider.of<DataService>(context, listen: false);
+    final data = await service.getChecklists(filter.shift, filter.fleet);
+
+    if (mounted) {
+      setState(() {
+        _checklists = data;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,24 +77,17 @@ class ChecklistScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  _buildChecklistItem(
-                    FontAwesomeIcons.userGroup,
-                    "Lotação Máxima",
-                    "Limite de 9 ocupantes verificado?",
-                    true,
-                  ),
-                  _buildChecklistItem(
-                    FontAwesomeIcons.shield,
-                    "Segurança Passiva",
-                    "Cintos de 3 pontos funcionais em todas as posições?",
-                    false,
-                  ),
-                  _buildChecklistItem(
-                    FontAwesomeIcons.car,
-                    "Sistemas Ativos",
-                    "Inspeção tátil de freios e ABS aprovada?",
-                    true,
-                  ),
+                  if (_isLoading && _checklists.isEmpty)
+                    const Center(child: CircularProgressIndicator())
+                  else if (_checklists.isEmpty)
+                    const Text("Nenhum item de checklist encontrado.")
+                  else
+                    ..._checklists.map((c) => _buildChecklistItem(
+                      FontAwesomeIcons.check, // Pode ser dinâmico no futuro
+                      c['title'] ?? 'Sem Título',
+                      c['description'] ?? 'Sem descrição',
+                      c['isApproved'] ?? false,
+                    )),
 
                   const SizedBox(height: 32),
                   SizedBox(
@@ -76,7 +112,11 @@ class ChecklistScreen extends StatelessWidget {
                           color: Colors.white,
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                         ScaffoldMessenger.of(context).showSnackBar(
+                           const SnackBar(content: Text('Comando de bloqueio enviado. O.S. gerada com sucesso!')),
+                         );
+                      },
                     ),
                   ),
                 ],

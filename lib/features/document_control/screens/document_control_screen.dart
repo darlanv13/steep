@@ -1,13 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../core/app_theme.dart';
+import '../../../core/providers/filter_provider.dart';
+import '../../../core/services/data_service.dart';
 
-class DocumentControlScreen extends StatelessWidget {
+class DocumentControlScreen extends StatefulWidget {
   const DocumentControlScreen({super.key});
+
+  @override
+  State<DocumentControlScreen> createState() => _DocumentControlScreenState();
+}
+
+class _DocumentControlScreenState extends State<DocumentControlScreen> {
+  List<Map<String, dynamic>> _complianceData = [];
+  bool _isLoading = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final filter = Provider.of<FilterProvider>(context, listen: true);
+    _loadData(filter);
+  }
+
+  Future<void> _loadData(FilterProvider filter) async {
+    if (!mounted) return;
+
+    if (_complianceData.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() => _isLoading = true);
+        });
+    }
+
+    final service = Provider.of<DataService>(context, listen: false);
+    final data = await service.getComplianceData(filter.fleet);
+
+    if (mounted) {
+      setState(() {
+        _complianceData = data;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 800;
+
+    // Separa os dados entre motoristas e veículos baseando-se em um campo 'type' (ex: 'driver' ou 'vehicle')
+    final drivers = _complianceData.where((d) => d['type'] == 'driver').toList();
+    final vehicles = _complianceData.where((d) => d['type'] == 'vehicle').toList();
 
     return Padding(
       padding: const EdgeInsets.all(32),
@@ -36,13 +78,19 @@ class DocumentControlScreen extends StatelessWidget {
                   "Sincronizar Global Access",
                   style: TextStyle(color: Colors.white),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                     const SnackBar(content: Text('Sincronização com o sistema Global Access iniciada.')),
+                   );
+                },
               ),
             ],
           ),
           const SizedBox(height: 32),
           Expanded(
-            child: Flex(
+            child: _isLoading && _complianceData.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : Flex(
               direction: isDesktop ? Axis.horizontal : Axis.vertical,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -52,6 +100,7 @@ class DocumentControlScreen extends StatelessWidget {
                     "Condutores (SSMA)",
                     true,
                     FontAwesomeIcons.idCard,
+                    drivers,
                   ),
                 ),
                 if (isDesktop) const SizedBox(width: 32) else const SizedBox(height: 32),
@@ -61,6 +110,7 @@ class DocumentControlScreen extends StatelessWidget {
                     "Frota (Selos e Vistorias)",
                     false,
                     FontAwesomeIcons.truck,
+                    vehicles,
                   ),
                 ),
               ],
@@ -75,6 +125,7 @@ class DocumentControlScreen extends StatelessWidget {
     String title,
     bool isDriver,
     FaIconData faIconData,
+    List<Map<String, dynamic>> items,
   ) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -102,30 +153,19 @@ class DocumentControlScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          if (isDriver) ...[
-            _buildDocRow(
-              "Carlos Mendes",
-              "RAC 02 Expira em 5 dias",
-              AppTheme.amareloVale,
-            ),
-            _buildDocRow(
-              "Ana Souza",
-              "TBSSMA e ASO Regulares",
-              AppTheme.sucesso,
-            ),
-            _buildDocRow("Marcos Silva", "CNH Vencida", AppTheme.alertaCritico),
-          ] else ...[
-            _buildDocRow(
-              "Van V-102",
-              "Selo de Inspeção Válido",
-              AppTheme.sucesso,
-            ),
-            _buildDocRow(
-              "Ônibus B-300",
-              "Pendente Laudo de Emissões",
-              AppTheme.amareloVale,
-            ),
-          ],
+          if (items.isEmpty)
+            const Text("Nenhum dado encontrado para o filtro atual.")
+          else
+            ...items.map((item) {
+                Color c = AppTheme.sucesso;
+                if (item['statusColor'] == 'warning') c = AppTheme.amareloVale;
+                if (item['statusColor'] == 'critical') c = AppTheme.alertaCritico;
+                return _buildDocRow(
+                  item['name'] ?? 'Sem Nome',
+                  item['status'] ?? 'Sem Status',
+                  c,
+                );
+            }),
         ],
       ),
     );

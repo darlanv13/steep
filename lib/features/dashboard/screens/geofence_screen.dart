@@ -1,9 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../../core/app_theme.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
 
-class GeofenceScreen extends StatelessWidget {
+import '../../../core/app_theme.dart';
+import '../../../core/services/data_service.dart';
+
+class GeofenceScreen extends StatefulWidget {
   const GeofenceScreen({super.key});
+
+  @override
+  State<GeofenceScreen> createState() => _GeofenceScreenState();
+}
+
+class _GeofenceScreenState extends State<GeofenceScreen> {
+  List<Map<String, dynamic>> _geofences = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (!mounted) return;
+
+    final service = Provider.of<DataService>(context, listen: false);
+    final data = await service.getGeofences();
+
+    if (mounted) {
+      setState(() {
+        _geofences = data;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +48,7 @@ class GeofenceScreen extends StatelessWidget {
         direction: isDesktop ? Axis.horizontal : Axis.vertical,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Área do Mapa (Simulação Visual)
+          // Área do Mapa
           Expanded(
             flex: isDesktop ? 2 : 0,
             child: Container(
@@ -23,22 +56,36 @@ class GeofenceScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://via.placeholder.com/800x600/e0e0e0/808080?text=Mapa+Topográfico+da+Cava+(Offline)',
-                  ),
-                  fit: BoxFit.cover,
-                ),
                 border: Border.all(color: Colors.black12),
               ),
               child: Stack(
                 children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: FlutterMap(
+                      options: const MapOptions(
+                        initialCenter: LatLng(-19.8157, -43.9542), // Coordenada genérica de mineração (BH region placeholder)
+                        initialZoom: 12.0,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.steep',
+                        ),
+                        // Caso a gente tenha poligonos no geofence data poderiamos adiciona-los aqui
+                      ],
+                    ),
+                  ),
                   Positioned(
                     top: 20,
                     right: 20,
                     child: FloatingActionButton(
                       backgroundColor: AppTheme.verdeVale,
-                      onPressed: () {},
+                      onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Modo de desenho de cerca ativado.')),
+                          );
+                      },
                       child: const FaIcon(
                         FontAwesomeIcons.drawPolygon,
                         color: Colors.white,
@@ -62,21 +109,21 @@ class GeofenceScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                _buildGeofenceCard(
-                  "Rampa Sul - Declive Severo",
-                  "Máx: 30 km/h",
-                  AppTheme.alertaCritico,
-                ),
-                _buildGeofenceCard(
-                  "Área de Transbordo Principal",
-                  "Máx: 40 km/h",
-                  AppTheme.amareloVale,
-                ),
-                _buildGeofenceCard(
-                  "Acesso Portaria 2",
-                  "Máx: 60 km/h",
-                  AppTheme.sucesso,
-                ),
+                if (_isLoading)
+                  const CircularProgressIndicator()
+                else if (_geofences.isEmpty)
+                  const Text("Nenhuma cerca ativa encontrada.")
+                else
+                  ..._geofences.map((g) {
+                    Color c = AppTheme.amareloVale;
+                    if (g['severity'] == 'critical') c = AppTheme.alertaCritico;
+                    if (g['severity'] == 'low') c = AppTheme.sucesso;
+                    return _buildGeofenceCard(
+                      g['name'] ?? 'Sem Nome',
+                      g['limit'] ?? 'N/A',
+                      c,
+                    );
+                  }),
                 const SizedBox(height: 32),
                 const Text(
                   "Veículos em Zona de Alerta",

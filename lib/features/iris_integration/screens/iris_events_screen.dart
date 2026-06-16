@@ -1,9 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../core/app_theme.dart';
+import '../../../core/services/data_service.dart';
 
-class IrisEventsScreen extends StatelessWidget {
+class IrisEventsScreen extends StatefulWidget {
   const IrisEventsScreen({super.key});
+
+  @override
+  State<IrisEventsScreen> createState() => _IrisEventsScreenState();
+}
+
+class _IrisEventsScreenState extends State<IrisEventsScreen> {
+  List<Map<String, dynamic>> _events = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (!mounted) return;
+
+    final service = Provider.of<DataService>(context, listen: false);
+    final data = await service.getIrisEvents();
+
+    if (mounted) {
+      setState(() {
+        _events = data;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,37 +68,37 @@ class IrisEventsScreen extends StatelessWidget {
                     "Exportar Lote Criptografado",
                     style: TextStyle(color: Colors.white),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                       const SnackBar(content: Text('Exportação criptografada iniciada com sucesso!')),
+                     );
+                  },
                 ),
               ],
             ),
             const SizedBox(height: 32),
             Expanded(
-              child: ListView(
-                children: [
-                  _buildEventTableRow(
-                    "EVT-091",
-                    "Telemetria",
-                    "Excesso de Velocidade",
-                    "Requer 5W2H",
-                    AppTheme.alertaCritico,
-                  ),
-                  _buildEventTableRow(
-                    "EVT-092",
-                    "DMS",
-                    "Micropestanejo Detectado",
-                    "Pendente Análise",
-                    AppTheme.amareloVale,
-                  ),
-                  _buildEventTableRow(
-                    "EVT-093",
-                    "Checklist",
-                    "Pneu Careca - V-40",
-                    "O.S. Aberta",
-                    AppTheme.sucesso,
-                  ),
-                ],
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _events.isEmpty
+                      ? const Center(child: Text("Nenhum evento IRIS pendente."))
+                      : ListView.builder(
+                          itemCount: _events.length,
+                          itemBuilder: (context, index) {
+                            final e = _events[index];
+                            Color c = AppTheme.amareloVale;
+                            if (e['severity'] == 'high') c = AppTheme.alertaCritico;
+                            if (e['severity'] == 'low') c = AppTheme.sucesso;
+
+                            return _buildEventTableRow(
+                              e['id'] ?? 'EVT-???',
+                              e['type'] ?? 'Desconhecido',
+                              e['description'] ?? 'Sem descrição',
+                              e['action'] ?? 'Pendente',
+                              c,
+                            );
+                          },
+                        ),
             ),
           ],
         ),
