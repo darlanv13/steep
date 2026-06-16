@@ -41,7 +41,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   Widget _buildDrawerContent() {
     return Container(
-      width: 280,
+      width: 220,
       color: AppTheme.verdeVale,
       child: Column(
         children: [
@@ -49,14 +49,14 @@ class _MainLayoutState extends State<MainLayout> {
           const FaIcon(
             FontAwesomeIcons.shieldHalved,
             color: AppTheme.amareloVale,
-            size: 48,
+            size: 36,
           ),
           const SizedBox(height: 16),
           const Text(
             "SGSV Mineração",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -306,18 +306,19 @@ class _MainLayoutState extends State<MainLayout> {
   Widget _buildMenuItem(int index, FaIconData faIconData, String title) {
     bool isActive = _selectedIndex == index;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
         color: isActive ? AppTheme.verdeEscuro : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
-        leading: FaIcon(faIconData),
+        leading: FaIcon(faIconData, size: 18, color: isActive ? Colors.white : Colors.white70),
         title: Text(
           title,
           style: TextStyle(
             color: isActive ? Colors.white : Colors.white70,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
           ),
         ),
         onTap: () {

@@ -4,8 +4,77 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../core/app_theme.dart';
 import '../../../core/services/pdf_service.dart';
 
-class AdvancedQualityScreen extends StatelessWidget {
+class AdvancedQualityScreen extends StatefulWidget {
   const AdvancedQualityScreen({super.key});
+
+  @override
+  State<AdvancedQualityScreen> createState() => _AdvancedQualityScreenState();
+}
+
+class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
+  // Estado para os 5 Porquês
+  final List<Map<String, dynamic>> _whys = [
+    {
+      "number": 1,
+      "question": "Por que o caminhão freou bruscamente?",
+      "answer": "Porque o sistema ABS detectou perda de tração e acionou frenagem de emergência.",
+      "isRootCause": false,
+    },
+    {
+      "number": 2,
+      "question": "Por que o ABS detectou perda de tração?",
+      "answer": "Porque a pista estava excessivamente úmida e escorregadia.",
+      "isRootCause": false,
+    },
+    {
+      "number": 3,
+      "question": "Por que a pista estava excessivamente úmida?",
+      "answer": "Porque o caminhão pipa aspergiu mais água do que o necessário.",
+      "isRootCause": false,
+    },
+    {
+      "number": 4,
+      "question": "Por que o caminhão pipa aspergiu mais água?",
+      "answer": "Porque o operador não ajustou o fluxo para as condições climáticas (já havia chovido).",
+      "isRootCause": false,
+    },
+    {
+      "number": 5,
+      "question": "Por que o operador não ajustou o fluxo?",
+      "answer": "Porque não há um POP (Procedimento Operacional Padrão) claro para ajuste de aspersão pós-chuva.",
+      "isRootCause": true,
+    },
+  ];
+
+  // Estado para o 5W2H
+  final List<Map<String, dynamic>> _actions = [
+    {
+      "what": "Criar POP de Aspersão",
+      "why": "Evitar pista úmida excessiva pós-chuva",
+      "where": "CCO / Mina",
+      "when": "15/11/2023",
+      "who": "João Silva (Eng. Minas)",
+      "how": "Revisão técnica de manuais operacionais",
+      "howMuch": "R\$ 0,00 (HH Interno)",
+      "status": "Em Andamento",
+      "statusColor": AppTheme.amareloVale,
+      "pdcaPhase": "Plan",
+      "pdcaColor": Colors.blue,
+    },
+    {
+      "what": "Treinar Operadores de Pipa",
+      "why": "Garantir entendimento do novo POP",
+      "where": "Auditório da Mina",
+      "when": "20/11/2023",
+      "who": "Maria Souza (RH/Treinamento)",
+      "how": "Workshops práticos de 4h",
+      "howMuch": "R\$ 2.500,00",
+      "status": "Pendente",
+      "statusColor": AppTheme.alertaCritico,
+      "pdcaPhase": "Do",
+      "pdcaColor": Colors.orange,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -236,9 +305,96 @@ class AdvancedQualityScreen extends StatelessWidget {
                             style: TextStyle(color: Colors.white),
                           ),
                           onPressed: () async {
-                            await PdfService.generateAndPrintUnifiedDossier();
+                            await PdfService.generateAndPrintUnifiedDossier(
+                              whys: _whys,
+                              actions: _actions,
+                            );
                           },
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          // Matriz de Risco (Probabilidade x Impacto / FMEA)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    FaIcon(
+                      FontAwesomeIcons.tableCells,
+                      color: AppTheme.verdeVale,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      "Matriz de Risco (Probabilidade x Impacto)",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Avaliação de severidade e ocorrência das anomalias registradas.",
+                  style: TextStyle(color: AppTheme.textoSecundario),
+                ),
+                const SizedBox(height: 24),
+                Center(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const SizedBox(width: 60), // Espaço para rótulo Y
+                            Expanded(child: _buildHeatmapCell("Baixo", "Baixo", AppTheme.sucesso.withValues(alpha: 0.5), "2")),
+                            Expanded(child: _buildHeatmapCell("Médio", "Baixo", AppTheme.amareloVale.withValues(alpha: 0.5), "5")),
+                            Expanded(child: _buildHeatmapCell("Alto", "Baixo", AppTheme.amareloVale, "12")),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const SizedBox(
+                              width: 60,
+                              child: Text("Médio", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            ),
+                            Expanded(child: _buildHeatmapCell("Baixo", "Médio", AppTheme.sucesso, "4")),
+                            Expanded(child: _buildHeatmapCell("Médio", "Médio", AppTheme.amareloVale, "18")),
+                            Expanded(child: _buildHeatmapCell("Alto", "Médio", AppTheme.alertaCritico.withValues(alpha: 0.8), "8")),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const SizedBox(
+                              width: 60,
+                              child: Text("Alto\n(Impacto)", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            ),
+                            Expanded(child: _buildHeatmapCell("Baixo", "Alto", AppTheme.amareloVale, "1")),
+                            Expanded(child: _buildHeatmapCell("Médio", "Alto", AppTheme.alertaCritico.withValues(alpha: 0.8), "3")),
+                            Expanded(child: _buildHeatmapCell("Alto", "Alto", AppTheme.alertaCritico, "5 (Crítico)")),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Row(
+                          children: [
+                            SizedBox(width: 60),
+                            Expanded(child: Text("Baixo", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                            Expanded(child: Text("Médio", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                            Expanded(child: Text("Alto\n(Probabilidade)", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                          ],
+                        )
                       ],
                     ),
                   ),
@@ -257,19 +413,29 @@ class AdvancedQualityScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    FaIcon(
-                      FontAwesomeIcons.clipboardList,
-                      color: AppTheme.verdeVale,
+                    const Row(
+                      children: [
+                        FaIcon(
+                          FontAwesomeIcons.clipboardList,
+                          color: AppTheme.verdeVale,
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          "Plano de Ação - 5W2H",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 12),
-                    Text(
-                      "Plano de Ação - 5W2H",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    ElevatedButton.icon(
+                      onPressed: () => _showAddActionDialog(),
+                      icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                      label: const Text("Adicionar Ação", style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -294,31 +460,21 @@ class AdvancedQualityScreen extends StatelessWidget {
                       DataColumn(label: Text('Como (How)', style: TextStyle(fontWeight: FontWeight.bold))),
                       DataColumn(label: Text('Quanto (How Much)', style: TextStyle(fontWeight: FontWeight.bold))),
                       DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('Fase PDCA', style: TextStyle(fontWeight: FontWeight.bold))),
                     ],
-                    rows: [
-                      _build5W2HRow(
-                        "Criar POP de Aspersão",
-                        "Evitar pista úmida excessiva pós-chuva",
-                        "CCO / Mina",
-                        "15/11/2023",
-                        "João Silva (Eng. Minas)",
-                        "Revisão técnica de manuais operacionais",
-                        "R\$ 0,00 (HH Interno)",
-                        "Em Andamento",
-                        AppTheme.amareloVale,
-                      ),
-                      _build5W2HRow(
-                        "Treinar Operadores de Pipa",
-                        "Garantir entendimento do novo POP",
-                        "Auditório da Mina",
-                        "20/11/2023",
-                        "Maria Souza (RH/Treinamento)",
-                        "Workshops práticos de 4h",
-                        "R\$ 2.500,00",
-                        "Pendente",
-                        AppTheme.alertaCritico,
-                      ),
-                    ],
+                    rows: _actions.map((a) => _build5W2HRow(
+                          a['what'],
+                          a['why'],
+                          a['where'],
+                          a['when'],
+                          a['who'],
+                          a['how'],
+                          a['howMuch'],
+                          a['status'],
+                          a['statusColor'],
+                          a['pdcaPhase'],
+                          a['pdcaColor'],
+                        )).toList(),
                   ),
                 ),
               ],
@@ -335,19 +491,29 @@ class AdvancedQualityScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    FaIcon(
-                      FontAwesomeIcons.circleQuestion,
-                      color: AppTheme.verdeVale,
+                    const Row(
+                      children: [
+                        FaIcon(
+                          FontAwesomeIcons.circleQuestion,
+                          color: AppTheme.verdeVale,
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          "5 Porquês (Análise de Causa Raiz)",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 12),
-                    Text(
-                      "5 Porquês (Análise de Causa Raiz)",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    ElevatedButton.icon(
+                      onPressed: () => _showAddWhyDialog(),
+                      icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                      label: const Text("Adicionar Porquê", style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -361,32 +527,12 @@ class AdvancedQualityScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                _buildWhyItem(
-                  1,
-                  "Por que o caminhão freou bruscamente?",
-                  "Porque o sistema ABS detectou perda de tração e acionou frenagem de emergência.",
-                ),
-                _buildWhyItem(
-                  2,
-                  "Por que o ABS detectou perda de tração?",
-                  "Porque a pista estava excessivamente úmida e escorregadia.",
-                ),
-                _buildWhyItem(
-                  3,
-                  "Por que a pista estava excessivamente úmida?",
-                  "Porque o caminhão pipa aspergiu mais água do que o necessário.",
-                ),
-                _buildWhyItem(
-                  4,
-                  "Por que o caminhão pipa aspergiu mais água?",
-                  "Porque o operador não ajustou o fluxo para as condições climáticas (já havia chovido).",
-                ),
-                _buildWhyItem(
-                  5,
-                  "Por que o operador não ajustou o fluxo?",
-                  "Porque não há um POP (Procedimento Operacional Padrão) claro para ajuste de aspersão pós-chuva.",
-                  isRootCause: true,
-                ),
+                ..._whys.map((w) => _buildWhyItem(
+                      w['number'],
+                      w['question'],
+                      w['answer'],
+                      isRootCause: w['isRootCause'],
+                    )),
               ],
             ),
           ),
@@ -395,7 +541,147 @@ class AdvancedQualityScreen extends StatelessWidget {
     );
   }
 
-  DataRow _build5W2HRow(String what, String why, String where, String when, String who, String how, String howMuch, String status, Color statusColor) {
+  // DIÁLOGOS DE INTERATIVIDADE
+  void _showAddWhyDialog() {
+    final questionCtrl = TextEditingController();
+    final answerCtrl = TextEditingController();
+    bool isRoot = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text("Adicionar Porquê"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: questionCtrl,
+                  decoration: const InputDecoration(labelText: "Pergunta (Por que...)"),
+                ),
+                TextField(
+                  controller: answerCtrl,
+                  decoration: const InputDecoration(labelText: "Resposta"),
+                ),
+                CheckboxListTile(
+                  title: const Text("É a Causa Raiz?"),
+                  value: isRoot,
+                  onChanged: (val) => setDialogState(() => isRoot = val ?? false),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+              ElevatedButton(
+                onPressed: () {
+                  if (questionCtrl.text.isNotEmpty && answerCtrl.text.isNotEmpty) {
+                    setState(() {
+                      _whys.add({
+                        "number": _whys.length + 1,
+                        "question": questionCtrl.text,
+                        "answer": answerCtrl.text,
+                        "isRootCause": isRoot,
+                      });
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text("Salvar", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showAddActionDialog() {
+    final whatCtrl = TextEditingController();
+    final whoCtrl = TextEditingController();
+    String pdcaPhase = "Plan";
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text("Nova Ação (5W2H)"),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: whatCtrl, decoration: const InputDecoration(labelText: "O Que (What)")),
+                  TextField(controller: whoCtrl, decoration: const InputDecoration(labelText: "Quem (Who)")),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: pdcaPhase,
+                    decoration: const InputDecoration(labelText: "Fase PDCA"),
+                    items: const [
+                      DropdownMenuItem(value: "Plan", child: Text("Plan")),
+                      DropdownMenuItem(value: "Do", child: Text("Do")),
+                      DropdownMenuItem(value: "Check", child: Text("Check")),
+                      DropdownMenuItem(value: "Act", child: Text("Act")),
+                    ],
+                    onChanged: (val) => setDialogState(() => pdcaPhase = val ?? "Plan"),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+              ElevatedButton(
+                onPressed: () {
+                  if (whatCtrl.text.isNotEmpty) {
+                    setState(() {
+                      _actions.add({
+                        "what": whatCtrl.text,
+                        "why": "Definido em RCA",
+                        "where": "Mina",
+                        "when": "TBD",
+                        "who": whoCtrl.text.isEmpty ? "Não definido" : whoCtrl.text,
+                        "how": "Conforme diretrizes",
+                        "howMuch": "TBD",
+                        "status": "Pendente",
+                        "statusColor": AppTheme.alertaCritico,
+                        "pdcaPhase": pdcaPhase,
+                        "pdcaColor": pdcaPhase == "Plan" ? Colors.blue : (pdcaPhase == "Do" ? Colors.orange : (pdcaPhase == "Check" ? Colors.purple : AppTheme.sucesso)),
+                      });
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text("Salvar", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  Widget _buildHeatmapCell(String prob, String impact, Color color, String count) {
+    return Container(
+      height: 80,
+      margin: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Center(
+        child: Text(
+          count,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+
+  DataRow _build5W2HRow(String what, String why, String where, String when, String who, String how, String howMuch, String status, Color statusColor, String pdcaPhase, Color pdcaColor) {
     return DataRow(
       cells: [
         DataCell(Text(what)),
@@ -417,6 +703,23 @@ class AdvancedQualityScreen extends StatelessWidget {
               status,
               style: TextStyle(
                 color: statusColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: pdcaColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              pdcaPhase,
+              style: const TextStyle(
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
