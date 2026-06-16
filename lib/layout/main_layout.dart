@@ -1,11 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/app_theme.dart';
+import '../features/dashboard/screens/dashboard_screen.dart';
+import '../features/quality_analysis/screens/advanced_quality_screen.dart';
 
-class MainLayout extends StatelessWidget {
-  final Widget child;
+class MainLayout extends StatefulWidget {
+  const MainLayout({Key? key}) : super(key: key);
 
-  const MainLayout({Key? key, required this.child}) : super(key: key);
+  @override
+  State<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends State<MainLayout> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = [
+    const DashboardScreen(),
+    const Center(child: Text("Rotogramas e Cercas (Em desenvolvimento)")),
+    const Center(child: Text("Inspeção Pré-Uso (Em desenvolvimento)")),
+    const Center(child: Text("Controle Documental (Em desenvolvimento)")),
+    const Center(child: Text("Eventos IRIS (Em desenvolvimento)")),
+    const AdvancedQualityScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -36,29 +52,34 @@ class MainLayout extends StatelessWidget {
                 const SizedBox(height: 40),
 
                 _buildMenuItem(
+                  0,
                   FontAwesomeIcons.chartLine,
                   "Painel Executivo (BI)",
-                  true,
                 ),
                 _buildMenuItem(
+                  1,
                   FontAwesomeIcons.route,
                   "Rotogramas e Cercas",
-                  false,
                 ),
                 _buildMenuItem(
+                  2,
                   FontAwesomeIcons.clipboardCheck,
                   "Inspeção Pré-Uso",
-                  false,
                 ),
                 _buildMenuItem(
+                  3,
                   FontAwesomeIcons.idCardClip,
                   "Controle Documental",
-                  false,
                 ),
                 _buildMenuItem(
+                  4,
                   FontAwesomeIcons.towerBroadcast,
                   "Eventos IRIS",
-                  false,
+                ),
+                _buildMenuItem(
+                  5,
+                  FontAwesomeIcons.chartPie,
+                  "Melhoria Contínua / RCA",
                 ),
               ],
             ),
@@ -112,7 +133,7 @@ class MainLayout extends StatelessWidget {
                 ),
 
                 // Conteúdo Injetado (Telas)
-                Expanded(child: child),
+                Expanded(child: _screens[_selectedIndex]),
               ],
             ),
           ),
@@ -121,7 +142,8 @@ class MainLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(FaIconData faIconData, String title, bool isActive) {
+  Widget _buildMenuItem(int index, FaIconData faIconData, String title) {
+    bool isActive = _selectedIndex == index;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -137,7 +159,11 @@ class MainLayout extends StatelessWidget {
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
         ),
-        onTap: () {}, // Aqui futuramente você gerencia a navegação
+        onTap: () {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
       ),
     );
   }
