@@ -5,15 +5,17 @@ import 'core/providers/filter_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/services/data_service.dart';
 import 'core/services/firebase_data_service.dart';
+import 'firebase_options.dart';
 import 'layout/main_layout.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Try to initialize Firebase. If config is missing, it will throw an error,
-  // but we can gracefully catch it or let the developer know they need `flutterfire configure`.
   try {
-    await Firebase.initializeApp();
+    // 2. Adicione as opções geradas aqui
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
     debugPrint(
       "Firebase initialization failed. Please run 'flutterfire configure'. Error: $e",
