@@ -169,7 +169,7 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                               p['title'] ?? '',
                               p['responsible'] ?? '',
                               p['status'] ?? '',
-                              (p['progress'] ?? 0.0) as double,
+                              (p['progress'] as num?)?.toDouble() ?? 0.0,
                               p['dueDate'] ?? '',
                             );
                           },
