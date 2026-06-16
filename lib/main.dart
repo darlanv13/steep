@@ -5,6 +5,7 @@ import 'core/providers/filter_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/services/data_service.dart';
 import 'core/services/mock_data_service.dart';
+import 'layout/main_layout.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

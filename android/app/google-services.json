@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "358263927947",
+    "project_id": "steep-6cd0f",
+    "storage_bucket": "steep-6cd0f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:358263927947:android:e4376057d2fca9189c108e",
+        "android_client_info": {
+          "package_name": "com.example.steep"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHvEAD07mpkIDgE0FvVc7l4xveRAivp4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
