@@ -10,53 +10,55 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Pegando a largura da tela para ajustes responsivos
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 1100; // Ponto de quebra para layout web
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Linha de KPIs
-          Row(
+          // Layout Responsivo: Wrap no lugar de Row pura para não estourar lateralmente
+          Wrap(
+            spacing: 24,
+            runSpacing: 24,
             children: [
-              Expanded(
-                child: _buildKpiCard(
-                  title: "Infrações de Telemetria",
-                  value: "1.2%",
-                  icon: FontAwesomeIcons.gaugeHigh,
-                  color: AppTheme.alertaCritico,
-                  subtitle: "Quebra de limites (RAC 02)",
-                ),
+              _buildResponsiveKpiCard(
+                context: context,
+                title: "Infrações de Telemetria",
+                value: "1.2%",
+                icon: FontAwesomeIcons.gaugeHigh,
+                color: AppTheme.alertaCritico,
+                subtitle: "Quebra de limites (RAC 02)",
               ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: _buildKpiCard(
-                  title: "Ocorrências DMS",
-                  value: "0.05",
-                  icon: FontAwesomeIcons.eyeLowVision,
-                  color: AppTheme.amareloVale,
-                  subtitle: "Fadiga a cada 1000km",
-                ),
+              _buildResponsiveKpiCard(
+                context: context,
+                title: "Ocorrências DMS",
+                value: "0.05",
+                icon: FontAwesomeIcons.eyeLowVision,
+                color: AppTheme.amareloVale,
+                subtitle: "Fadiga a cada 1000km",
               ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: _buildKpiCard(
-                  title: "MTBF",
-                  value: "450h",
-                  icon: FontAwesomeIcons.screwdriverWrench,
-                  color: AppTheme.sucesso,
-                  subtitle: "Tempo livre de quebras",
-                ),
+              _buildResponsiveKpiCard(
+                context: context,
+                title: "MTBF",
+                value: "450h",
+                icon: FontAwesomeIcons.screwdriverWrench,
+                color: AppTheme.sucesso,
+                subtitle: "Tempo livre de quebras",
               ),
             ],
           ),
           const SizedBox(height: 32),
 
-          // Integração dos Widgets Dinâmicos
-          Row(
+          // Ajuste de grid flexível
+          Flex(
+            direction: isDesktop ? Axis.horizontal : Axis.vertical,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                flex: 2,
+                flex: isDesktop ? 2 : 0,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -77,18 +79,17 @@ class DashboardScreen extends StatelessWidget {
                       vehicleId: "V-205",
                     ),
                     const SizedBox(height: 24),
-                    const CriticalAlertTrigger(), // Botão de simulação de alerta crítico
+                    const CriticalAlertTrigger(),
                   ],
                 ),
               ),
-              const SizedBox(width: 32),
+              if (isDesktop)
+                const SizedBox(width: 32)
+              else
+                const SizedBox(height: 32),
               Expanded(
-                flex: 1,
-                child: Column(
-                  children: [
-                    const DmsEvidenceGallery(), // Galeria de evidências fotográficas
-                  ],
-                ),
+                flex: isDesktop ? 1 : 0,
+                child: const Column(children: [DmsEvidenceGallery()]),
               ),
             ],
           ),
@@ -97,14 +98,22 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildKpiCard({
+  Widget _buildResponsiveKpiCard({
+    required BuildContext context,
     required String title,
     required String value,
     required FaIconData icon,
     required Color color,
     required String subtitle,
   }) {
+    // Calcula uma largura baseada no tamanho da tela (aprox. 3 colunas em monitores grandes, 1 ou 2 em menores)
+    double width = MediaQuery.of(context).size.width;
+    double cardWidth = width > 1100
+        ? (width - 360 - 48) / 3
+        : (width > 800 ? (width - 340) / 2 : width);
+
     return Container(
+      width: cardWidth,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
@@ -120,11 +129,14 @@ class DashboardScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppTheme.textoSecundario,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppTheme.textoSecundario,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               FaIcon(icon, color: color, size: 20),
@@ -146,6 +158,7 @@ class DashboardScreen extends StatelessWidget {
               fontSize: 12,
               color: AppTheme.textoSecundario,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

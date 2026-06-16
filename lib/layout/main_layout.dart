@@ -1,11 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/app_theme.dart';
+import '../features/dashboard/screens/dashboard_screen.dart';
+import '../features/quality_analysis/screens/advanced_quality_screen.dart';
+import '../features/continuous_improvement/screens/action_plan_screen.dart';
+import '../features/continuous_improvement/screens/risk_heatmap_screen.dart';
+import '../features/continuous_improvement/screens/cost_analysis_screen.dart';
+import '../features/maintenance/screens/predictive_maintenance_screen.dart';
+import '../features/cross_analytics/screens/cross_analytics_screen.dart';
 
-class MainLayout extends StatelessWidget {
-  final Widget child;
+class MainLayout extends StatefulWidget {
+  const MainLayout({Key? key}) : super(key: key);
 
-  const MainLayout({Key? key, required this.child}) : super(key: key);
+  @override
+  State<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends State<MainLayout> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = [
+    const DashboardScreen(),
+    const Center(child: Text("Rotogramas e Cercas (Em desenvolvimento)")),
+    const Center(child: Text("Inspeção Pré-Uso (Em desenvolvimento)")),
+    const Center(child: Text("Controle Documental (Em desenvolvimento)")),
+    const Center(child: Text("Eventos IRIS (Em desenvolvimento)")),
+    const AdvancedQualityScreen(),
+    const ActionPlanScreen(),
+    const RiskHeatmapScreen(),
+    const CostAnalysisScreen(),
+    const PredictiveMaintenanceScreen(),
+    const CrossAnalyticsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -34,31 +60,68 @@ class MainLayout extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 40),
-
-                _buildMenuItem(
-                  FontAwesomeIcons.chartLine,
-                  "Painel Executivo (BI)",
-                  true,
-                ),
-                _buildMenuItem(
-                  FontAwesomeIcons.route,
-                  "Rotogramas e Cercas",
-                  false,
-                ),
-                _buildMenuItem(
-                  FontAwesomeIcons.clipboardCheck,
-                  "Inspeção Pré-Uso",
-                  false,
-                ),
-                _buildMenuItem(
-                  FontAwesomeIcons.idCardClip,
-                  "Controle Documental",
-                  false,
-                ),
-                _buildMenuItem(
-                  FontAwesomeIcons.towerBroadcast,
-                  "Eventos IRIS",
-                  false,
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildMenuItem(
+                          0,
+                          FontAwesomeIcons.chartLine,
+                          "Painel Executivo (BI)",
+                        ),
+                        _buildMenuItem(
+                          1,
+                          FontAwesomeIcons.route,
+                          "Rotogramas e Cercas",
+                        ),
+                        _buildMenuItem(
+                          2,
+                          FontAwesomeIcons.clipboardCheck,
+                          "Inspeção Pré-Uso",
+                        ),
+                        _buildMenuItem(
+                          3,
+                          FontAwesomeIcons.idCardClip,
+                          "Controle Documental",
+                        ),
+                        _buildMenuItem(
+                          4,
+                          FontAwesomeIcons.towerBroadcast,
+                          "Eventos IRIS",
+                        ),
+                        _buildMenuItem(
+                          5,
+                          FontAwesomeIcons.chartPie,
+                          "Melhoria Contínua / RCA",
+                        ),
+                        _buildMenuItem(
+                          6,
+                          FontAwesomeIcons.listCheck,
+                          "Planos de Ação (PDCA)",
+                        ),
+                        _buildMenuItem(
+                          7,
+                          FontAwesomeIcons.mapLocationDot,
+                          "Heatmap de Riscos",
+                        ),
+                        _buildMenuItem(
+                          8,
+                          FontAwesomeIcons.sackDollar,
+                          "Custos da Não-Qualidade",
+                        ),
+                        _buildMenuItem(
+                          9,
+                          FontAwesomeIcons.screwdriverWrench,
+                          "Manutenção Preditiva",
+                        ),
+                        _buildMenuItem(
+                          10,
+                          FontAwesomeIcons.networkWired,
+                          "Cross-Analytics",
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -89,6 +152,24 @@ class MainLayout extends StatelessWidget {
                       ),
                       Row(
                         children: [
+                          _buildGlobalFilter("Turno", [
+                            "Manhã",
+                            "Tarde",
+                            "Noite",
+                          ]),
+                          const SizedBox(width: 16),
+                          _buildGlobalFilter("Frota", [
+                            "Caminhões",
+                            "Escavadeiras",
+                            "Tratores",
+                          ]),
+                          const SizedBox(width: 16),
+                          _buildGlobalFilter("Período", [
+                            "Hoje",
+                            "Últimos 7 dias",
+                            "Este Mês",
+                          ]),
+                          const SizedBox(width: 24),
                           IconButton(
                             icon: const FaIcon(
                               FontAwesomeIcons.bell,
@@ -112,7 +193,7 @@ class MainLayout extends StatelessWidget {
                 ),
 
                 // Conteúdo Injetado (Telas)
-                Expanded(child: child),
+                Expanded(child: _screens[_selectedIndex]),
               ],
             ),
           ),
@@ -121,7 +202,40 @@ class MainLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(FaIconData faIconData, String title, bool isActive) {
+  Widget _buildGlobalFilter(String label, List<String> options) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Row(
+        children: [
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: options.first,
+              items: options.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value, style: const TextStyle(fontSize: 12)),
+                );
+              }).toList(),
+              onChanged: (_) {},
+              icon: const FaIcon(FontAwesomeIcons.chevronDown, size: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(int index, FaIconData faIconData, String title) {
+    bool isActive = _selectedIndex == index;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -137,7 +251,11 @@ class MainLayout extends StatelessWidget {
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
         ),
-        onTap: () {}, // Aqui futuramente você gerencia a navegação
+        onTap: () {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
       ),
     );
   }

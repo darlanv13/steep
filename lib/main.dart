@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/app_theme.dart';
 import 'layout/main_layout.dart';
-import 'features/dashboard/screens/dashboard_screen.dart';
 
 void main() {
   runApp(const SgsvApp());
@@ -16,9 +15,7 @@ class SgsvApp extends StatelessWidget {
       title: 'SGSV Mineração - VPS Vale',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      home: const MainLayout(
-        child: DashboardScreen(), // Inicia pelo Dashboard
-      ),
+      home: const MainLayout(),
     );
   }
 }
