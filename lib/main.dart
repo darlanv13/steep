@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'core/app_theme.dart';
 import 'layout/main_layout.dart';
+import 'core/providers/filter_provider.dart';
 
 void main() {
-  runApp(const SgsvApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FilterProvider()),
+      ],
+      child: const SgsvApp(),
+    ),
+  );
 }
 
 class SgsvApp extends StatelessWidget {
