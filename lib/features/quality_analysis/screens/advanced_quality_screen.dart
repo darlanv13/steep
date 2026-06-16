@@ -130,6 +130,40 @@ class AdvancedQualityScreen extends StatelessWidget {
                           AppTheme.amareloVale,
                         ),
                         const Spacer(),
+                        const Divider(),
+                        const Row(
+                          children: [
+                            FaIcon(
+                              FontAwesomeIcons.arrowTrendDown,
+                              color: AppTheme.verdeVale,
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              "Eficácia (Acompanhamento Temporal)",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          height: 80,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppTheme.background,
+                            border: Border.all(color: Colors.black12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "Gráfico de Série Temporal - Redução de 45% nos últimos 3 meses",
+                              style: TextStyle(color: AppTheme.textoSecundario, fontSize: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.textoPrincipal,
@@ -140,7 +174,7 @@ class AdvancedQualityScreen extends StatelessWidget {
                             color: Colors.white,
                           ),
                           label: const Text(
-                            "Exportar Laudo RCA Completo",
+                            "Exportar Dossiê Unificado (RCA + Câmeras + Interlock)",
                             style: TextStyle(color: Colors.white),
                           ),
                           onPressed: () {},
