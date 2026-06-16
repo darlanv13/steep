@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../core/app_theme.dart';
+import '../core/providers/filter_provider.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
 import '../features/quality_analysis/screens/advanced_quality_screen.dart';
 import '../features/continuous_improvement/screens/action_plan_screen.dart';
@@ -152,23 +154,34 @@ class _MainLayoutState extends State<MainLayout> {
                       ),
                       Row(
                         children: [
-                          _buildGlobalFilter("Turno", [
-                            "Manhã",
-                            "Tarde",
-                            "Noite",
-                          ]),
-                          const SizedBox(width: 16),
-                          _buildGlobalFilter("Frota", [
-                            "Caminhões",
-                            "Escavadeiras",
-                            "Tratores",
-                          ]),
-                          const SizedBox(width: 16),
-                          _buildGlobalFilter("Período", [
-                            "Hoje",
-                            "Últimos 7 dias",
-                            "Este Mês",
-                          ]),
+                          Consumer<FilterProvider>(
+                            builder: (context, filterProvider, child) {
+                              return Row(
+                                children: [
+                                  _buildGlobalFilter(
+                                    "Turno",
+                                    ["Manhã", "Tarde", "Noite"],
+                                    filterProvider.shift,
+                                    filterProvider.setShift,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  _buildGlobalFilter(
+                                    "Frota",
+                                    ["Caminhões", "Escavadeiras", "Tratores"],
+                                    filterProvider.fleet,
+                                    filterProvider.setFleet,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  _buildGlobalFilter(
+                                    "Período",
+                                    ["Hoje", "Últimos 7 dias", "Este Mês"],
+                                    filterProvider.period,
+                                    filterProvider.setPeriod,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                           const SizedBox(width: 24),
                           IconButton(
                             icon: const FaIcon(
@@ -202,7 +215,12 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
-  Widget _buildGlobalFilter(String label, List<String> options) {
+  Widget _buildGlobalFilter(
+    String label,
+    List<String> options,
+    String currentValue,
+    Function(String) onChanged,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
@@ -218,14 +236,18 @@ class _MainLayoutState extends State<MainLayout> {
           ),
           DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: options.first,
+              value: currentValue,
               items: options.map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value, style: const TextStyle(fontSize: 12)),
                 );
               }).toList(),
-              onChanged: (_) {},
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  onChanged(newValue);
+                }
+              },
               icon: const FaIcon(FontAwesomeIcons.chevronDown, size: 12),
             ),
           ),
