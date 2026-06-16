@@ -35,18 +35,13 @@ class _MainLayoutState extends State<MainLayout> {
     const CrossAnalyticsScreen(),
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(
+  Widget _buildDrawerContent() {
+    return Container(
+      width: 280,
+      color: AppTheme.verdeVale,
+      child: Column(
         children: [
-          // Menu Lateral
-          Container(
-            width: 280,
-            color: AppTheme.verdeVale,
-            child: Column(
-              children: [
-                const SizedBox(height: 50),
+          const SizedBox(height: 50),
                 const FaIcon(
                   FontAwesomeIcons.shieldHalved,
                   color: AppTheme.amareloVale,
@@ -116,18 +111,27 @@ class _MainLayoutState extends State<MainLayout> {
                           FontAwesomeIcons.screwdriverWrench,
                           "Manutenção Preditiva",
                         ),
-                        _buildMenuItem(
-                          10,
-                          FontAwesomeIcons.networkWired,
-                          "Cross-Analytics",
-                        ),
-                      ],
-                    ),
+                  _buildMenuItem(
+                    10,
+                    FontAwesomeIcons.networkWired,
+                    "Cross-Analytics",
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      drawer: MediaQuery.of(context).size.width < 800 ? _buildDrawerContent() : null,
+      body: Row(
+        children: [
+          if (MediaQuery.of(context).size.width >= 800) _buildDrawerContent(),
 
           // Área de Conteúdo
           Expanded(
@@ -144,47 +148,67 @@ class _MainLayoutState extends State<MainLayout> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Visão Geral da Operação",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textoPrincipal,
-                        ),
-                      ),
                       Row(
                         children: [
-                          Consumer<FilterProvider>(
-                            builder: (context, filterProvider, child) {
-                              return Row(
-                                children: [
-                                  _buildGlobalFilter("Turno", ["Manhã", "Tarde", "Noite"], filterProvider.shift, filterProvider.setShift),
-                                  const SizedBox(width: 16),
-                                  _buildGlobalFilter("Frota", ["Caminhões", "Escavadeiras", "Tratores"], filterProvider.fleet, filterProvider.setFleet),
-                                  const SizedBox(width: 16),
-                                  _buildGlobalFilter("Período", ["Hoje", "Últimos 7 dias", "Este Mês"], filterProvider.period, filterProvider.setPeriod),
-                                ],
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 24),
-                          IconButton(
-                            icon: const FaIcon(
-                              FontAwesomeIcons.bell,
-                              color: AppTheme.verdeVale,
+                          if (MediaQuery.of(context).size.width < 800)
+                            Builder(
+                              builder: (context) => IconButton(
+                                icon: const Icon(Icons.menu),
+                                onPressed: () {
+                                  Scaffold.of(context).openDrawer();
+                                },
+                              ),
                             ),
-                            onPressed: () {},
-                          ),
-                          const SizedBox(width: 16),
-                          const CircleAvatar(
-                            backgroundColor: AppTheme.verdeEscuro,
-                            child: FaIcon(
-                              FontAwesomeIcons.userShield,
-                              color: Colors.white,
-                              size: 18,
+                          if (MediaQuery.of(context).size.width >= 1000)
+                            const Text(
+                              "Visão Geral da Operação",
+                              style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                                color: AppTheme.textoPrincipal,
+                              ),
                             ),
-                          ),
                         ],
+                      ),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          reverse: true,
+                          child: Row(
+                            children: [
+                              Consumer<FilterProvider>(
+                                builder: (context, filterProvider, child) {
+                                  return Row(
+                                    children: [
+                                      _buildGlobalFilter("Turno", ["Manhã", "Tarde", "Noite"], filterProvider.shift, filterProvider.setShift),
+                                      const SizedBox(width: 16),
+                                      _buildGlobalFilter("Frota", ["Caminhões", "Escavadeiras", "Tratores"], filterProvider.fleet, filterProvider.setFleet),
+                                      const SizedBox(width: 16),
+                                      _buildGlobalFilter("Período", ["Hoje", "Últimos 7 dias", "Este Mês"], filterProvider.period, filterProvider.setPeriod),
+                                    ],
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 24),
+                              IconButton(
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.bell,
+                                  color: AppTheme.verdeVale,
+                                ),
+                                onPressed: () {},
+                              ),
+                              const SizedBox(width: 16),
+                              const CircleAvatar(
+                                backgroundColor: AppTheme.verdeEscuro,
+                                child: FaIcon(
+                                  FontAwesomeIcons.userShield,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -268,6 +292,9 @@ class _MainLayoutState extends State<MainLayout> {
           setState(() {
             _selectedIndex = index;
           });
+          if (MediaQuery.of(context).size.width < 800) {
+            Navigator.of(context).pop(); // Close drawer on selection
+          }
         },
       ),
     );

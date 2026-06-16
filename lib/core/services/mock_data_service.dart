@@ -1,5 +1,7 @@
-class MockDataService {
-  static final List<Map<String, dynamic>> _plans = [
+import 'data_service.dart';
+
+class MockDataService implements DataService {
+  final List<Map<String, dynamic>> _plans = [
     {
       'title': 'Troca de Sensores ABS (Caminhão Fora de Estrada)',
       'responsible': 'João Silva',
@@ -38,11 +40,17 @@ class MockDataService {
     },
   ];
 
-  static List<Map<String, dynamic>> getActionPlans(String shift, String fleet, String period) {
+  @override
+  Future<List<Map<String, dynamic>>> getActionPlans(String shift, String fleet, String period) async {
+    // Simula tempo de rede
+    await Future.delayed(const Duration(milliseconds: 500));
     return _plans.where((p) => p['fleet'] == fleet && p['shift'] == shift).toList();
   }
 
-  static void addActionPlan(Map<String, dynamic> plan) {
+  @override
+  Future<void> addActionPlan(Map<String, dynamic> plan) async {
+    // Simula tempo de rede
+    await Future.delayed(const Duration(milliseconds: 500));
     _plans.add(plan);
   }
 }
