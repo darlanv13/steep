@@ -35,99 +35,105 @@ class _MainLayoutState extends State<MainLayout> {
     const CrossAnalyticsScreen(),
   ];
 
+  Widget _buildDrawerContent() {
+    return Container(
+      width: 280,
+      color: AppTheme.verdeVale,
+      child: Column(
+        children: [
+          const SizedBox(height: 50),
+          const FaIcon(
+            FontAwesomeIcons.shieldHalved,
+            color: AppTheme.amareloVale,
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            "SGSV Mineração",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 40),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildMenuItem(
+                    0,
+                    FontAwesomeIcons.chartLine,
+                    "Painel Executivo (BI)",
+                  ),
+                  _buildMenuItem(
+                    1,
+                    FontAwesomeIcons.route,
+                    "Rotogramas e Cercas",
+                  ),
+                  _buildMenuItem(
+                    2,
+                    FontAwesomeIcons.clipboardCheck,
+                    "Inspeção Pré-Uso",
+                  ),
+                  _buildMenuItem(
+                    3,
+                    FontAwesomeIcons.idCardClip,
+                    "Controle Documental",
+                  ),
+                  _buildMenuItem(
+                    4,
+                    FontAwesomeIcons.towerBroadcast,
+                    "Eventos IRIS",
+                  ),
+                  _buildMenuItem(
+                    5,
+                    FontAwesomeIcons.chartPie,
+                    "Melhoria Contínua / RCA",
+                  ),
+                  _buildMenuItem(
+                    6,
+                    FontAwesomeIcons.listCheck,
+                    "Planos de Ação (PDCA)",
+                  ),
+                  _buildMenuItem(
+                    7,
+                    FontAwesomeIcons.mapLocationDot,
+                    "Heatmap de Riscos",
+                  ),
+                  _buildMenuItem(
+                    8,
+                    FontAwesomeIcons.sackDollar,
+                    "Custos da Não-Qualidade",
+                  ),
+                  _buildMenuItem(
+                    9,
+                    FontAwesomeIcons.screwdriverWrench,
+                    "Manutenção Preditiva",
+                  ),
+                  _buildMenuItem(
+                    10,
+                    FontAwesomeIcons.networkWired,
+                    "Cross-Analytics",
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MediaQuery.of(context).size.width < 800
+          ? _buildDrawerContent()
+          : null,
       body: Row(
         children: [
-          // Menu Lateral
-          Container(
-            width: 280,
-            color: AppTheme.verdeVale,
-            child: Column(
-              children: [
-                const SizedBox(height: 50),
-                const FaIcon(
-                  FontAwesomeIcons.shieldHalved,
-                  color: AppTheme.amareloVale,
-                  size: 48,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "SGSV Mineração",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        _buildMenuItem(
-                          0,
-                          FontAwesomeIcons.chartLine,
-                          "Painel Executivo (BI)",
-                        ),
-                        _buildMenuItem(
-                          1,
-                          FontAwesomeIcons.route,
-                          "Rotogramas e Cercas",
-                        ),
-                        _buildMenuItem(
-                          2,
-                          FontAwesomeIcons.clipboardCheck,
-                          "Inspeção Pré-Uso",
-                        ),
-                        _buildMenuItem(
-                          3,
-                          FontAwesomeIcons.idCardClip,
-                          "Controle Documental",
-                        ),
-                        _buildMenuItem(
-                          4,
-                          FontAwesomeIcons.towerBroadcast,
-                          "Eventos IRIS",
-                        ),
-                        _buildMenuItem(
-                          5,
-                          FontAwesomeIcons.chartPie,
-                          "Melhoria Contínua / RCA",
-                        ),
-                        _buildMenuItem(
-                          6,
-                          FontAwesomeIcons.listCheck,
-                          "Planos de Ação (PDCA)",
-                        ),
-                        _buildMenuItem(
-                          7,
-                          FontAwesomeIcons.mapLocationDot,
-                          "Heatmap de Riscos",
-                        ),
-                        _buildMenuItem(
-                          8,
-                          FontAwesomeIcons.sackDollar,
-                          "Custos da Não-Qualidade",
-                        ),
-                        _buildMenuItem(
-                          9,
-                          FontAwesomeIcons.screwdriverWrench,
-                          "Manutenção Preditiva",
-                        ),
-                        _buildMenuItem(
-                          10,
-                          FontAwesomeIcons.networkWired,
-                          "Cross-Analytics",
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          if (MediaQuery.of(context).size.width >= 800) _buildDrawerContent(),
 
           // Área de Conteúdo
           Expanded(
@@ -144,62 +150,86 @@ class _MainLayoutState extends State<MainLayout> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Visão Geral da Operação",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textoPrincipal,
-                        ),
-                      ),
                       Row(
                         children: [
-                          Consumer<FilterProvider>(
-                            builder: (context, filterProvider, child) {
-                              return Row(
-                                children: [
-                                  _buildGlobalFilter(
-                                    "Turno",
-                                    ["Manhã", "Tarde", "Noite"],
-                                    filterProvider.shift,
-                                    filterProvider.setShift,
-                                  ),
-                                  const SizedBox(width: 16),
-                                  _buildGlobalFilter(
-                                    "Frota",
-                                    ["Caminhões", "Escavadeiras", "Tratores"],
-                                    filterProvider.fleet,
-                                    filterProvider.setFleet,
-                                  ),
-                                  const SizedBox(width: 16),
-                                  _buildGlobalFilter(
-                                    "Período",
-                                    ["Hoje", "Últimos 7 dias", "Este Mês"],
-                                    filterProvider.period,
-                                    filterProvider.setPeriod,
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 24),
-                          IconButton(
-                            icon: const FaIcon(
-                              FontAwesomeIcons.bell,
-                              color: AppTheme.verdeVale,
+                          if (MediaQuery.of(context).size.width < 800)
+                            Builder(
+                              builder: (context) => IconButton(
+                                icon: const Icon(Icons.menu),
+                                onPressed: () {
+                                  Scaffold.of(context).openDrawer();
+                                },
+                              ),
                             ),
-                            onPressed: () {},
-                          ),
-                          const SizedBox(width: 16),
-                          const CircleAvatar(
-                            backgroundColor: AppTheme.verdeEscuro,
-                            child: FaIcon(
-                              FontAwesomeIcons.userShield,
-                              color: Colors.white,
-                              size: 18,
+                          if (MediaQuery.of(context).size.width >= 1000)
+                            const Text(
+                              "Visão Geral da Operação",
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textoPrincipal,
+                              ),
                             ),
-                          ),
                         ],
+                      ),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          reverse: true,
+                          child: Row(
+                            children: [
+                              Consumer<FilterProvider>(
+                                builder: (context, filterProvider, child) {
+                                  return Row(
+                                    children: [
+                                      _buildGlobalFilter(
+                                        "Turno",
+                                        ["Manhã", "Tarde", "Noite"],
+                                        filterProvider.shift,
+                                        filterProvider.setShift,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildGlobalFilter(
+                                        "Frota",
+                                        [
+                                          "Caminhões",
+                                          "Escavadeiras",
+                                          "Tratores",
+                                        ],
+                                        filterProvider.fleet,
+                                        filterProvider.setFleet,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildGlobalFilter(
+                                        "Período",
+                                        ["Hoje", "Últimos 7 dias", "Este Mês"],
+                                        filterProvider.period,
+                                        filterProvider.setPeriod,
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 24),
+                              IconButton(
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.bell,
+                                  color: AppTheme.verdeVale,
+                                ),
+                                onPressed: () {},
+                              ),
+                              const SizedBox(width: 16),
+                              const CircleAvatar(
+                                backgroundColor: AppTheme.verdeEscuro,
+                                child: FaIcon(
+                                  FontAwesomeIcons.userShield,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -211,7 +241,9 @@ class _MainLayoutState extends State<MainLayout> {
                     builder: (context, filterProvider, child) {
                       if (filterProvider.isLoading) {
                         return const Center(
-                          child: CircularProgressIndicator(color: AppTheme.verdeVale),
+                          child: CircularProgressIndicator(
+                            color: AppTheme.verdeVale,
+                          ),
                         );
                       }
                       return _screens[_selectedIndex];
@@ -288,6 +320,9 @@ class _MainLayoutState extends State<MainLayout> {
           setState(() {
             _selectedIndex = index;
           });
+          if (MediaQuery.of(context).size.width < 800) {
+            Navigator.of(context).pop(); // Close drawer on selection
+          }
         },
       ),
     );

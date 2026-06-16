@@ -2,13 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/app_theme.dart';
 import 'core/providers/filter_provider.dart';
-import 'layout/main_layout.dart';
-import 'features/dashboard/screens/dashboard_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'core/services/data_service.dart';
+import 'core/services/mock_data_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Try to initialize Firebase. If config is missing, it will throw an error,
+  // but we can gracefully catch it or let the developer know they need `flutterfire configure`.
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    print(
+      "Firebase initialization failed. Please run 'flutterfire configure'. Error: $e",
+    );
+  }
+
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => FilterProvider())],
+      providers: [
+        Provider<DataService>(
+          create: (_) => MockDataService(),
+        ), // To use firebase, swap to FirebaseDataService()
+        ChangeNotifierProvider(create: (_) => FilterProvider()),
+      ],
       child: const SgsvApp(),
     ),
   );
