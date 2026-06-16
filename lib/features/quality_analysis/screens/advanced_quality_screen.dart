@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/app_theme.dart';
+import '../../../core/services/pdf_service.dart';
 
 class AdvancedQualityScreen extends StatelessWidget {
   const AdvancedQualityScreen({Key? key}) : super(key: key);
@@ -177,7 +178,9 @@ class AdvancedQualityScreen extends StatelessWidget {
                             "Exportar Dossiê Unificado (RCA + Câmeras + Interlock)",
                             style: TextStyle(color: Colors.white),
                           ),
-                          onPressed: () {},
+                          onPressed: () async {
+                            await PdfService.generateAndPrintUnifiedDossier();
+                          },
                         ),
                       ],
                     ),

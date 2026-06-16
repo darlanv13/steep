@@ -34,6 +34,16 @@ class CostAnalysisScreen extends StatelessWidget {
                         Expanded(
                           child: BarChart(
                             BarChartData(
+                              barTouchData: BarTouchData(
+                                touchTooltipData: BarTouchTooltipData(
+                                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                    return BarTooltipItem(
+                                      'R\$ ${rod.toY.toInt()}',
+                                      const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    );
+                                  },
+                                ),
+                              ),
                               alignment: BarChartAlignment.spaceAround,
                               barGroups: [
                                 BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 8000, color: AppTheme.alertaCritico)]),
@@ -77,6 +87,9 @@ class CostAnalysisScreen extends StatelessWidget {
                         Expanded(
                           child: PieChart(
                             PieChartData(
+                              pieTouchData: PieTouchData(
+                                touchCallback: (FlTouchEvent event, pieTouchResponse) {},
+                              ),
                               sections: [
                                 PieChartSectionData(value: 40, title: 'Caminhões', color: AppTheme.amareloVale, radius: 60),
                                 PieChartSectionData(value: 30, title: 'Tratores', color: AppTheme.verdeEscuro, radius: 60),
