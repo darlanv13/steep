@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/app_theme.dart';
 import '../../../core/providers/filter_provider.dart';
 import '../../../core/services/data_service.dart';
+import '../../../core/services/pdf_service.dart';
 
 class ActionPlanScreen extends StatefulWidget {
   const ActionPlanScreen({super.key});
@@ -151,6 +153,9 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
     // Em produção isso faria um PUT/Update via DataService.
     List<String> evidences = plan['evidences'] != null ? List<String>.from(plan['evidences']) : [];
     List<String> studies = plan['studies'] != null ? List<String>.from(plan['studies']) : [];
+    List<String> history = plan['history'] != null ? List<String>.from(plan['history']) : [
+      "[${DateTime.now().subtract(const Duration(days: 2)).toString().substring(0, 16)}] Plano Criado",
+    ];
     double currentProgress = (plan['progress'] ?? 0.0) as double;
     String currentPhase = plan['pdcaPhase'] ?? 'Plan';
 
@@ -181,7 +186,12 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                         DropdownMenuItem(value: "Act", child: Text("Act")),
                       ],
                       onChanged: (val) {
-                        if (val != null) setDialogState(() => currentPhase = val);
+                        if (val != null && val != currentPhase) {
+                          setDialogState(() {
+                            currentPhase = val;
+                            history.insert(0, "[${DateTime.now().toString().substring(0, 16)}] Fase alterada para $val");
+                          });
+                        }
                       },
                     ),
                     const SizedBox(height: 16),
@@ -192,25 +202,35 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                       max: 1,
                       divisions: 10,
                       activeColor: AppTheme.verdeVale,
+                      onChangeEnd: (val) {
+                         setDialogState(() {
+                           history.insert(0, "[${DateTime.now().toString().substring(0, 16)}] Progresso alterado para ${(val * 100).toInt()}%");
+                         });
+                      },
                       onChanged: (val) {
                         setDialogState(() => currentProgress = val);
                       },
                     ),
                     const Divider(height: 32),
-                    const Text("Evidências (Anexos)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const Text("Evidências (Anexos Reais)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
                     ...evidences.map((e) => ListTile(
                           leading: const FaIcon(FontAwesomeIcons.image, size: 16, color: AppTheme.verdeEscuro),
                           title: Text(e, style: const TextStyle(fontSize: 12)),
                         )),
                     ElevatedButton.icon(
-                      onPressed: () {
-                        setDialogState(() {
-                          evidences.add("evidencia_img_${DateTime.now().millisecondsSinceEpoch}.png");
-                        });
+                      onPressed: () async {
+                        final picker = ImagePicker();
+                        final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                        if (pickedFile != null) {
+                          setDialogState(() {
+                            evidences.add(pickedFile.name);
+                            history.insert(0, "[${DateTime.now().toString().substring(0, 16)}] Evidência anexada: ${pickedFile.name}");
+                          });
+                        }
                       },
                       icon: const Icon(Icons.upload_file, size: 16),
-                      label: const Text("Anexar Evidência"),
+                      label: const Text("Buscar da Galeria"),
                     ),
                     const Divider(height: 32),
                     const Text("Estudos e Falhas Associados (RCA)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -222,17 +242,58 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                     ElevatedButton.icon(
                       onPressed: () {
                         setDialogState(() {
-                          studies.add("Análise Ishikawa / 5 Porquês - #${DateTime.now().minute}");
+                          final newStudy = "Análise Ishikawa / 5 Porquês - #${DateTime.now().minute}";
+                          studies.add(newStudy);
+                          history.insert(0, "[${DateTime.now().toString().substring(0, 16)}] Estudo vinculado: $newStudy");
                         });
                       },
                       icon: const Icon(Icons.link, size: 16),
                       label: const Text("Vincular Estudo"),
+                    ),
+                    const Divider(height: 32),
+                    const Text("Linha do Tempo (Histórico)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: AppTheme.background,
+                        border: Border.all(color: Colors.black12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ListView.builder(
+                        itemCount: history.length,
+                        itemBuilder: (context, idx) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.history, size: 12, color: AppTheme.textoSecundario),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(history[idx], style: const TextStyle(fontSize: 12, color: AppTheme.textoPrincipal))),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
             actions: [
+              TextButton(
+                onPressed: () async {
+                   // Adicionamos os dados reais do plano que devem ser exportados (simulando que estão no DB)
+                   plan['pdcaPhase'] = currentPhase;
+                   plan['progress'] = currentProgress;
+                   plan['evidences'] = evidences;
+                   plan['studies'] = studies;
+                   plan['history'] = history;
+
+                   await PdfService.generateActionPlanReport(plan);
+                },
+                child: const Text("Exportar Dossiê do Plano (PDF)", style: TextStyle(color: AppTheme.verdeVale)),
+              ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text("Fechar"),
