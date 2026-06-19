@@ -218,21 +218,34 @@ class _DocumentControlScreenState extends State<DocumentControlScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  String newStatusColor = 'success';
+                  String newStatusText = 'Aprovado/Válido';
+
                   setState(() {
-                    // Atualizamos o item original na lista completa de dados
                     final docIndex = _complianceData.indexOf(doc);
                     if (docIndex != -1) {
                         if (currentStatus == "Não Conforme") {
-                           _complianceData[docIndex]['statusColor'] = 'critical';
-                           _complianceData[docIndex]['status'] = 'Vencido/Bloqueado';
-                        } else {
-                           _complianceData[docIndex]['statusColor'] = 'success';
-                           _complianceData[docIndex]['status'] = 'Aprovado/Válido';
+                           newStatusColor = 'critical';
+                           newStatusText = 'Vencido/Bloqueado';
                         }
+                        _complianceData[docIndex]['statusColor'] = newStatusColor;
+                        _complianceData[docIndex]['status'] = newStatusText;
                     }
                   });
-                  Navigator.pop(context);
+
+                  final service = Provider.of<DataService>(context, listen: false);
+                  final docId = doc['id'];
+                  if (docId != null) {
+                    await service.updateComplianceData(docId, {
+                      'statusColor': newStatusColor,
+                      'status': newStatusText,
+                    });
+                  }
+
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
                 },
                 child: const Text("Salvar"),
               ),

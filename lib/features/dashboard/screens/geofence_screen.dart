@@ -173,16 +173,24 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (nameCtrl.text.isNotEmpty && limitCtrl.text.isNotEmpty) {
+                    final newGeofence = {
+                      "name": nameCtrl.text,
+                      "limit": limitCtrl.text,
+                      "severity": severity,
+                    };
+
                     setState(() {
-                      _geofences.add({
-                        "name": nameCtrl.text,
-                        "limit": limitCtrl.text,
-                        "severity": severity,
-                      });
+                      _geofences.add(newGeofence);
                     });
-                    Navigator.pop(context);
+
+                    final service = Provider.of<DataService>(context, listen: false);
+                    await service.addGeofence(newGeofence);
+
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                   }
                 },
                 child: const Text("Salvar"),
@@ -208,12 +216,21 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
             ElevatedButton(
-              onPressed: () {
+                onPressed: () async {
                 if (limitCtrl.text.isNotEmpty) {
                   setState(() {
                     _geofences[index]['limit'] = limitCtrl.text;
                   });
-                  Navigator.pop(context);
+
+                    final service = Provider.of<DataService>(context, listen: false);
+                    final geofenceId = _geofences[index]['id'];
+                    if (geofenceId != null) {
+                      await service.updateGeofence(geofenceId, {'limit': limitCtrl.text});
+                    }
+
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                 }
               },
               child: const Text("Atualizar"),

@@ -181,10 +181,15 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             value: isApproved,
             activeThumbColor: AppTheme.sucesso,
             inactiveThumbColor: AppTheme.alertaCritico,
-            onChanged: (val) {
+            onChanged: (val) async {
               setState(() {
                 _checklists[index]['isApproved'] = val;
               });
+              final service = Provider.of<DataService>(context, listen: false);
+              final checklistId = _checklists[index]['id'];
+              if (checklistId != null) {
+                await service.updateChecklist(checklistId, {'isApproved': val});
+              }
             },
           ),
         ],
