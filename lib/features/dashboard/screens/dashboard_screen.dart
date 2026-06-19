@@ -1,18 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../core/app_theme.dart';
+import '../../../core/providers/filter_provider.dart';
+import '../../../core/services/data_service.dart';
 import '../widgets/animated_status_card.dart';
 import '../widgets/critical_alert_trigger.dart';
 import '../../dms_monitoring/widgets/dms_evidence_gallery.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  bool _isLoading = true;
+  Map<String, dynamic> _kpis = {};
+  List<Map<String, dynamic>> _drivers = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final filter = Provider.of<FilterProvider>(context, listen: true);
+    _loadData(filter);
+  }
+
+  Future<void> _loadData(FilterProvider filter) async {
+    if (!mounted) return;
+
+    final service = Provider.of<DataService>(context, listen: false);
+
+    // Buscar KPIs e Motoristas baseados nos filtros
+    final kpis = await service.getDashboardKpis(filter.fleet, filter.shift, filter.period);
+    final compliance = await service.getComplianceData(filter.fleet);
+
+    if (mounted) {
+      setState(() {
+        _kpis = kpis;
+        // Filtra apenas compliance de motoristas
+        _drivers = compliance.where((d) => d['type'] == 'driver').toList();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // Pegando a largura da tela para ajustes responsivos
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1100; // Ponto de quebra para layout web
+
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
@@ -27,7 +69,7 @@ class DashboardScreen extends StatelessWidget {
               _buildResponsiveKpiCard(
                 context: context,
                 title: "Infrações de Telemetria",
-                value: "1.2%",
+                value: _kpis['telemetryInfractions'] ?? '0.0%',
                 icon: FontAwesomeIcons.gaugeHigh,
                 color: AppTheme.alertaCritico,
                 subtitle: "Quebra de limites (RAC 02)",
@@ -35,7 +77,7 @@ class DashboardScreen extends StatelessWidget {
               _buildResponsiveKpiCard(
                 context: context,
                 title: "Ocorrências DMS",
-                value: "0.05",
+                value: _kpis['dmsOccurrences'] ?? '0.00',
                 icon: FontAwesomeIcons.eyeLowVision,
                 color: AppTheme.amareloVale,
                 subtitle: "Fadiga a cada 1000km",
@@ -43,7 +85,7 @@ class DashboardScreen extends StatelessWidget {
               _buildResponsiveKpiCard(
                 context: context,
                 title: "MTBF",
-                value: "450h",
+                value: _kpis['mtbf'] ?? '0h',
                 icon: FontAwesomeIcons.screwdriverWrench,
                 color: AppTheme.sucesso,
                 subtitle: "Tempo livre de quebras",
@@ -70,14 +112,16 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const AnimatedStatusCard(
-                      driverName: "João Silva",
-                      vehicleId: "V-102",
-                    ),
-                    const AnimatedStatusCard(
-                      driverName: "Carlos Mendes",
-                      vehicleId: "V-205",
-                    ),
+                    if (_drivers.isEmpty)
+                      const Text("Nenhum condutor no raio monitorado.")
+                    else
+                      ..._drivers.take(3).map((d) {
+                        return AnimatedStatusCard(
+                          driverName: d['name'] ?? "Desconhecido",
+                          vehicleId: "V-DB",
+                          isCompliantInitial: d['statusColor'] != 'critical',
+                        );
+                      }),
                     const SizedBox(height: 24),
                     const CriticalAlertTrigger(),
                   ],

@@ -15,6 +15,8 @@ import '../features/continuous_improvement/screens/cost_analysis_screen.dart';
 import '../features/maintenance/screens/predictive_maintenance_screen.dart';
 import '../features/cross_analytics/screens/cross_analytics_screen.dart';
 import '../features/quality_analysis/screens/knowledge_base_screen.dart';
+import '../features/admin/screens/admin_panel_screen.dart';
+import '../core/providers/auth_provider.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -26,22 +28,7 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const GeofenceScreen(),
-    const ChecklistScreen(),
-    const DocumentControlScreen(),
-    const IrisEventsScreen(),
-    const AdvancedQualityScreen(),
-    const ActionPlanScreen(),
-    const RiskHeatmapScreen(),
-    const CostAnalysisScreen(),
-    const PredictiveMaintenanceScreen(),
-    const CrossAnalyticsScreen(),
-    const KnowledgeBaseScreen(),
-  ];
-
-  Widget _buildDrawerContent() {
+  Widget _buildDrawerContent(AuthProvider authProvider) {
     return Container(
       width: 220,
       color: AppTheme.verdeVale,
@@ -127,6 +114,12 @@ class _MainLayoutState extends State<MainLayout> {
                     FontAwesomeIcons.bookOpenReader,
                     "Lições Aprendidas",
                   ),
+                  if (authProvider.userRole == 'admin')
+                    _buildMenuItem(
+                      12,
+                      FontAwesomeIcons.usersGear,
+                      "Painel de Cadastros",
+                    ),
                 ],
               ),
             ),
@@ -138,13 +131,36 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: true);
+    final userRole = authProvider.userRole;
+
+    final List<Widget> screens = [
+      const DashboardScreen(),
+      const GeofenceScreen(),
+      const ChecklistScreen(),
+      const DocumentControlScreen(),
+      const IrisEventsScreen(),
+      const AdvancedQualityScreen(),
+      const ActionPlanScreen(),
+      const RiskHeatmapScreen(),
+      const CostAnalysisScreen(),
+      const PredictiveMaintenanceScreen(),
+      const CrossAnalyticsScreen(),
+      const KnowledgeBaseScreen(),
+      if (userRole == 'admin') const AdminPanelScreen(),
+    ];
+
+    if (_selectedIndex >= screens.length) {
+       _selectedIndex = 0;
+    }
+
     return Scaffold(
       drawer: MediaQuery.of(context).size.width < 800
-          ? _buildDrawerContent()
+          ? _buildDrawerContent(authProvider)
           : null,
       body: Row(
         children: [
-          if (MediaQuery.of(context).size.width >= 800) _buildDrawerContent(),
+          if (MediaQuery.of(context).size.width >= 800) _buildDrawerContent(authProvider),
 
           // Área de Conteúdo
           Expanded(
@@ -230,13 +246,34 @@ class _MainLayoutState extends State<MainLayout> {
                                 onPressed: () {},
                               ),
                               const SizedBox(width: 16),
-                              const CircleAvatar(
-                                backgroundColor: AppTheme.verdeEscuro,
-                                child: FaIcon(
-                                  FontAwesomeIcons.userShield,
-                                  color: Colors.white,
-                                  size: 18,
+                              PopupMenuButton<String>(
+                                icon: const CircleAvatar(
+                                  backgroundColor: AppTheme.verdeEscuro,
+                                  child: FaIcon(
+                                    FontAwesomeIcons.userShield,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
                                 ),
+                                onSelected: (value) {
+                                  if (value == 'logout') {
+                                    authProvider.logout();
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) {
+                                  return [
+                                    const PopupMenuItem<String>(
+                                      value: 'logout',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.logout, size: 16),
+                                          SizedBox(width: 8),
+                                          Text('Sair do Sistema'),
+                                        ],
+                                      ),
+                                    ),
+                                  ];
+                                },
                               ),
                             ],
                           ),
@@ -257,7 +294,7 @@ class _MainLayoutState extends State<MainLayout> {
                           ),
                         );
                       }
-                      return _screens[_selectedIndex];
+                      return screens[_selectedIndex];
                     },
                   ),
                 ),

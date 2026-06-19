@@ -1,9 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'data_service.dart';
 
 class FirebaseDataService implements DataService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instanceFor(
+    app: Firebase.app(),
+    databaseId: 'steepdb',
+  );
+
+  @override
+  Future<Map<String, dynamic>> getDashboardKpis(
+    String fleet,
+    String shift,
+    String period,
+  ) async {
+    try {
+      final snapshot = await _firestore
+          .collection('dashboard_kpis')
+          .where('shift', isEqualTo: shift)
+          .where('fleet', isEqualTo: fleet)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.data();
+      }
+      return {
+        "telemetryInfractions": "N/A",
+        "dmsOccurrences": "N/A",
+        "mtbf": "N/A",
+      };
+    } catch (e) {
+      return {
+        "telemetryInfractions": "N/A",
+        "dmsOccurrences": "N/A",
+        "mtbf": "N/A",
+      };
+    }
+  }
 
   @override
   Future<List<Map<String, dynamic>>> getActionPlans(
@@ -164,8 +199,71 @@ class FirebaseDataService implements DataService {
   }
 
   @override
-  Future<void> updateRcaAnalysis(String id, Map<String, dynamic> updates) async {
+  Future<void> updateRcaAnalysis(
+    String id,
+    Map<String, dynamic> updates,
+  ) async {
     updates.remove('id');
     await _firestore.collection('rca_analyses').doc(id).update(updates);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    try {
+      final snapshot = await _firestore.collection('users').get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> addUser(Map<String, dynamic> user) async {
+    user.remove('id');
+    await _firestore.collection('users').add(user);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDrivers() async {
+    try {
+      final snapshot = await _firestore.collection('drivers').get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> addDriver(Map<String, dynamic> driver) async {
+    driver.remove('id');
+    await _firestore.collection('drivers').add(driver);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getVehicles() async {
+    try {
+      final snapshot = await _firestore.collection('vehicles').get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> addVehicle(Map<String, dynamic> vehicle) async {
+    vehicle.remove('id');
+    await _firestore.collection('vehicles').add(vehicle);
   }
 }

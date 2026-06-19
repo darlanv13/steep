@@ -82,6 +82,24 @@ class MockDataService implements DataService {
     {"id": "geo_3", "name": "Pátio de Estacionamento", "limit": "15 km/h", "severity": "low"},
   ];
 
+  final List<Map<String, dynamic>> _users = [
+    {"id": "usr_1", "name": "Admin Principal", "email": "admin@vale.com", "role": "admin"},
+    {"id": "usr_2", "name": "João Qualidade", "email": "joao.qualidade@vale.com", "role": "supervisor_qualidade"},
+    {"id": "usr_3", "name": "Maria Operadora", "email": "maria@vale.com", "role": "operador"},
+  ];
+
+  final List<Map<String, dynamic>> _drivers = [
+    {"id": "drv_1", "name": "Ana Souza", "license": "AB-12345"},
+    {"id": "drv_2", "name": "João Silva", "license": "AB-98765"},
+    {"id": "drv_3", "name": "Marcos Paulo", "license": "C-45612"},
+  ];
+
+  final List<Map<String, dynamic>> _vehicles = [
+    {"id": "veh_1", "plate": "ABC-1234", "fleet": "Caminhões"},
+    {"id": "veh_2", "plate": "XYZ-9876", "fleet": "Escavadeiras"},
+    {"id": "veh_3", "plate": "TRT-5555", "fleet": "Tratores"},
+  ];
+
   final List<Map<String, dynamic>> _rcaAnalyses = [
     {
       "id": "rca_1",
@@ -114,6 +132,16 @@ class MockDataService implements DataService {
       "colorValue": 0xFFE74C3C // AppTheme.alertaCritico.value
     }
   ];
+
+  @override
+  Future<Map<String, dynamic>> getDashboardKpis(String fleet, String shift, String period) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return {
+      "telemetryInfractions": "1.8%",
+      "dmsOccurrences": "0.12",
+      "mtbf": "380h",
+    };
+  }
 
   @override
   Future<List<Map<String, dynamic>>> getActionPlans(String shift, String fleet, String period) async {
@@ -215,5 +243,44 @@ class MockDataService implements DataService {
     if (index != -1) {
       _rcaAnalyses[index].addAll(updates);
     }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return List.from(_users);
+  }
+
+  @override
+  Future<void> addUser(Map<String, dynamic> user) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    user['id'] = 'usr_${DateTime.now().millisecondsSinceEpoch}';
+    _users.add(user);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDrivers() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return List.from(_drivers);
+  }
+
+  @override
+  Future<void> addDriver(Map<String, dynamic> driver) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    driver['id'] = 'drv_${DateTime.now().millisecondsSinceEpoch}';
+    _drivers.add(driver);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getVehicles() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return List.from(_vehicles);
+  }
+
+  @override
+  Future<void> addVehicle(Map<String, dynamic> vehicle) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    vehicle['id'] = 'veh_${DateTime.now().millisecondsSinceEpoch}';
+    _vehicles.add(vehicle);
   }
 }
