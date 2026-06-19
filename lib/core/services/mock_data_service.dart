@@ -224,8 +224,9 @@ class MockDataService implements DataService {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRcaAnalyses() async {
+  Future<List<Map<String, dynamic>>> getRcaAnalyses(String shift, String fleet, String period) async {
     await Future.delayed(const Duration(milliseconds: 500));
+    // Simulated filtering based on the new arguments
     return List.from(_rcaAnalyses);
   }
 

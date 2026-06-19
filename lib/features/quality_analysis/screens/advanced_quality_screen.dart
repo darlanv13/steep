@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../../../core/app_theme.dart';
+import '../../../core/providers/filter_provider.dart';
 import '../../../core/services/data_service.dart';
 import '../../../core/services/pdf_service.dart';
 
@@ -19,16 +20,17 @@ class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
   bool _isLoading = true;
 
   @override
-  void initState() {
-    super.initState();
-    _loadData();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final filter = Provider.of<FilterProvider>(context, listen: true);
+    _loadData(filter);
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData(FilterProvider filter) async {
     if (!mounted) return;
 
     final service = Provider.of<DataService>(context, listen: false);
-    final analyses = await service.getRcaAnalyses();
+    final analyses = await service.getRcaAnalyses(filter.shift, filter.fleet, filter.period);
 
     if (mounted) {
       setState(() {

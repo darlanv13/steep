@@ -149,9 +149,14 @@ class FirebaseDataService implements DataService {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRcaAnalyses() async {
+  Future<List<Map<String, dynamic>>> getRcaAnalyses(String shift, String fleet, String period) async {
     try {
-      final snapshot = await _firestore.collection('rca_analyses').get();
+      final snapshot = await _firestore
+          .collection('rca_analyses')
+          .where('shift', isEqualTo: shift)
+          .where('fleet', isEqualTo: fleet)
+          .get();
+
       return snapshot.docs.map((doc) {
         final data = doc.data();
         data['id'] = doc.id;

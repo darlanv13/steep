@@ -11,7 +11,7 @@ abstract class DataService {
   Future<void> addGeofence(Map<String, dynamic> geofence);
   Future<void> updateGeofence(String id, Map<String, dynamic> updates);
   Future<List<Map<String, dynamic>>> getIrisEvents();
-  Future<List<Map<String, dynamic>>> getRcaAnalyses();
+  Future<List<Map<String, dynamic>>> getRcaAnalyses(String shift, String fleet, String period);
   Future<void> addRcaAnalysis(Map<String, dynamic> analysis);
   Future<void> updateRcaAnalysis(String id, Map<String, dynamic> updates);
   Future<List<Map<String, dynamic>>> getUsers();
