@@ -120,4 +120,30 @@ class FirebaseDataService implements DataService {
       return [];
     }
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getRcaAnalyses() async {
+    try {
+      final snapshot = await _firestore.collection('rca_analyses').get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> addRcaAnalysis(Map<String, dynamic> analysis) async {
+    analysis.remove('id');
+    await _firestore.collection('rca_analyses').add(analysis);
+  }
+
+  @override
+  Future<void> updateRcaAnalysis(String id, Map<String, dynamic> updates) async {
+    updates.remove('id');
+    await _firestore.collection('rca_analyses').doc(id).update(updates);
+  }
 }

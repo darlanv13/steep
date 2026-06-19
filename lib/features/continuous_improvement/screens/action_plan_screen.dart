@@ -303,6 +303,18 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                 onPressed: () async {
                   final service = Provider.of<DataService>(context, listen: false);
                   final planId = plan['id'];
+
+                  setState(() {
+                    final planIndex = _plans.indexWhere((p) => p['id'] == planId);
+                    if (planIndex != -1) {
+                      _plans[planIndex]['pdcaPhase'] = currentPhase;
+                      _plans[planIndex]['progress'] = currentProgress;
+                      _plans[planIndex]['evidences'] = evidences;
+                      _plans[planIndex]['studies'] = studies;
+                      _plans[planIndex]['history'] = history;
+                    }
+                  });
+
                   if (planId != null) {
                     await service.updateActionPlan(planId, {
                       'pdcaPhase': currentPhase,
