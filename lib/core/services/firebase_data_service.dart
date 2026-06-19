@@ -173,4 +173,64 @@ class FirebaseDataService implements DataService {
     updates.remove('id');
     await _firestore.collection('rca_analyses').doc(id).update(updates);
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    try {
+      final snapshot = await _firestore.collection('users').get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> addUser(Map<String, dynamic> user) async {
+    user.remove('id');
+    await _firestore.collection('users').add(user);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDrivers() async {
+    try {
+      final snapshot = await _firestore.collection('drivers').get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> addDriver(Map<String, dynamic> driver) async {
+    driver.remove('id');
+    await _firestore.collection('drivers').add(driver);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getVehicles() async {
+    try {
+      final snapshot = await _firestore.collection('vehicles').get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> addVehicle(Map<String, dynamic> vehicle) async {
+    vehicle.remove('id');
+    await _firestore.collection('vehicles').add(vehicle);
+  }
 }

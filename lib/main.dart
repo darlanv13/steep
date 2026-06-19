@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/app_theme.dart';
 import 'core/providers/filter_provider.dart';
+import 'core/providers/auth_provider.dart';
+import 'core/providers/mock_auth_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/services/data_service.dart';
+import 'core/services/mock_data_service.dart';
 import 'core/services/firebase_data_service.dart';
 import 'layout/main_layout.dart';
+import 'features/auth/screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,13 +24,24 @@ void main() async {
     );
   }
 
+  // Change to true to use real Firebase services
+  const bool useFirebase = false;
+
   runApp(
     MultiProvider(
       providers: [
         Provider<DataService>(
-          create: (_) => FirebaseDataService(),
-        ), // To use firebase, swap to FirebaseDataService()
+          create: (_) => useFirebase ? FirebaseDataService() : MockDataService(),
+        ),
         ChangeNotifierProvider(create: (_) => FilterProvider()),
+        ChangeNotifierProvider<AuthProvider>(
+          create: (_) {
+             if (useFirebase) return AuthProvider();
+             final mock = MockAuthProvider();
+             mock.setAuthState(false, 'operador');
+             return mock;
+          },
+        ),
       ],
       child: const SgsvApp(),
     ),
@@ -42,7 +57,19 @@ class SgsvApp extends StatelessWidget {
       title: 'SGSV Mineração - VPS Vale',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      home: const MainLayout(),
+      home: Consumer<AuthProvider>(
+        builder: (context, auth, child) {
+          if (auth.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (auth.isAuthenticated) {
+            return const MainLayout();
+          }
+          return const LoginScreen();
+        },
+      ),
     );
   }
 }
