@@ -82,6 +82,38 @@ class MockDataService implements DataService {
     {"id": "geo_3", "name": "Pátio de Estacionamento", "limit": "15 km/h", "severity": "low"},
   ];
 
+  final List<Map<String, dynamic>> _rcaAnalyses = [
+    {
+      "id": "rca_1",
+      "type": "5whys",
+      "number": 1,
+      "question": "Por que o caminhão freou bruscamente?",
+      "answer": "Porque o sistema ABS detectou perda de tração e acionou frenagem de emergência.",
+      "isRootCause": false,
+    },
+    {
+      "id": "rca_2",
+      "type": "5whys",
+      "number": 2,
+      "question": "Por que o ABS detectou perda de tração?",
+      "answer": "Porque a pista estava excessivamente úmida e escorregadia.",
+      "isRootCause": false,
+    },
+    {
+      "id": "rca_3",
+      "type": "ishikawa",
+      "category": "Máquina",
+      "cause": "Falha sistêmica no ABS atestada via telemetria.",
+      "colorValue": 0xFFF4A900 // AppTheme.amareloVale.value
+    },
+    {
+      "id": "rca_4",
+      "type": "ishikawa",
+      "category": "Mão de Obra",
+      "cause": "Fadiga detectada pelo sistema DMS na 8ª hora.",
+      "colorValue": 0xFFE74C3C // AppTheme.alertaCritico.value
+    }
+  ];
 
   @override
   Future<List<Map<String, dynamic>>> getActionPlans(String shift, String fleet, String period) async {
@@ -161,5 +193,27 @@ class MockDataService implements DataService {
   @override
   Future<List<Map<String, dynamic>>> getIrisEvents() async {
     return [];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getRcaAnalyses() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return List.from(_rcaAnalyses);
+  }
+
+  @override
+  Future<void> addRcaAnalysis(Map<String, dynamic> analysis) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    analysis['id'] = 'rca_${DateTime.now().millisecondsSinceEpoch}';
+    _rcaAnalyses.add(analysis);
+  }
+
+  @override
+  Future<void> updateRcaAnalysis(String id, Map<String, dynamic> updates) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final index = _rcaAnalyses.indexWhere((r) => r['id'] == id);
+    if (index != -1) {
+      _rcaAnalyses[index].addAll(updates);
+    }
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import '../../../core/app_theme.dart';
+import '../../../core/services/data_service.dart';
 import '../../../core/services/pdf_service.dart';
 
 class AdvancedQualityScreen extends StatefulWidget {
@@ -12,49 +14,42 @@ class AdvancedQualityScreen extends StatefulWidget {
 }
 
 class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
-  // Estado para os 5 Porquês
-  final List<Map<String, dynamic>> _whys = [
-    {
-      "number": 1,
-      "question": "Por que o caminhão freou bruscamente?",
-      "answer": "Porque o sistema ABS detectou perda de tração e acionou frenagem de emergência.",
-      "isRootCause": false,
-    },
-    {
-      "number": 2,
-      "question": "Por que o ABS detectou perda de tração?",
-      "answer": "Porque a pista estava excessivamente úmida e escorregadia.",
-      "isRootCause": false,
-    },
-    {
-      "number": 3,
-      "question": "Por que a pista estava excessivamente úmida?",
-      "answer": "Porque o caminhão pipa aspergiu mais água do que o necessário.",
-      "isRootCause": false,
-    },
-    {
-      "number": 4,
-      "question": "Por que o caminhão pipa aspergiu mais água?",
-      "answer": "Porque o operador não ajustou o fluxo para as condições climáticas (já havia chovido).",
-      "isRootCause": false,
-    },
-    {
-      "number": 5,
-      "question": "Por que o operador não ajustou o fluxo?",
-      "answer": "Porque não há um POP (Procedimento Operacional Padrão) claro para ajuste de aspersão pós-chuva.",
-      "isRootCause": true,
-    },
-  ];
+  List<Map<String, dynamic>> _whys = [];
+  List<Map<String, dynamic>> _ishikawaCauses = [];
+  bool _isLoading = true;
 
-  // Estado Ishikawa
-  final List<Map<String, dynamic>> _ishikawaCauses = [
-    {"category": "Máquina", "cause": "Falha sistêmica no ABS atestada via telemetria.", "color": AppTheme.amareloVale},
-    {"category": "Meio Ambiente", "cause": "Pista de minério umedecida reduzindo aderência.", "color": AppTheme.verdeEscuro},
-    {"category": "Mão de Obra", "cause": "Fadiga detectada pelo sistema DMS na 8ª hora.", "color": AppTheme.alertaCritico},
-    {"category": "Método", "cause": "Rotograma com limite de velocidade superestimado.", "color": AppTheme.amareloVale},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
-  // Estado para o 5W2H
+  Future<void> _loadData() async {
+    if (!mounted) return;
+
+    final service = Provider.of<DataService>(context, listen: false);
+    final analyses = await service.getRcaAnalyses();
+
+    if (mounted) {
+      setState(() {
+        _whys = analyses.where((a) => a['type'] == '5whys').toList();
+        _whys.sort((a, b) => (a['number'] as int).compareTo(b['number'] as int));
+
+        _ishikawaCauses = analyses.where((a) => a['type'] == 'ishikawa').map((a) {
+          return {
+            'id': a['id'],
+            'category': a['category'],
+            'cause': a['cause'],
+            'color': Color(a['colorValue'] as int),
+          };
+        }).toList();
+
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Estado para o 5W2H (Mock, uma vez que vem de ActionPlanScreen na realidade)
   final List<Map<String, dynamic>> _actions = [
     {
       "what": "Criar POP de Aspersão",
@@ -86,6 +81,10 @@ class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -577,17 +576,26 @@ class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (questionCtrl.text.isNotEmpty && answerCtrl.text.isNotEmpty) {
+                    final newWhy = {
+                      "type": "5whys",
+                      "number": _whys.length + 1,
+                      "question": questionCtrl.text,
+                      "answer": answerCtrl.text,
+                      "isRootCause": isRoot,
+                    };
+
                     setState(() {
-                      _whys.add({
-                        "number": _whys.length + 1,
-                        "question": questionCtrl.text,
-                        "answer": answerCtrl.text,
-                        "isRootCause": isRoot,
-                      });
+                      _whys.add(newWhy);
                     });
-                    Navigator.pop(context);
+
+                    final service = Provider.of<DataService>(context, listen: false);
+                    await service.addRcaAnalysis(newWhy);
+
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                   }
                 },
                 child: const Text("Salvar", style: TextStyle(color: Colors.white)),
@@ -698,21 +706,34 @@ class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (causeCtrl.text.isNotEmpty) {
-                    setState(() {
-                      Color color = AppTheme.textoSecundario;
-                      if (category == "Mão de Obra") color = AppTheme.alertaCritico;
-                      if (category == "Máquina" || category == "Método") color = AppTheme.amareloVale;
-                      if (category == "Meio Ambiente") color = AppTheme.verdeEscuro;
+                    Color color = AppTheme.textoSecundario;
+                    if (category == "Mão de Obra") color = AppTheme.alertaCritico;
+                    if (category == "Máquina" || category == "Método") color = AppTheme.amareloVale;
+                    if (category == "Meio Ambiente") color = AppTheme.verdeEscuro;
 
+                    final newIshikawa = {
+                      "type": "ishikawa",
+                      "category": category,
+                      "cause": causeCtrl.text,
+                      "colorValue": color.toARGB32(),
+                    };
+
+                    setState(() {
                       _ishikawaCauses.add({
                         "category": category,
                         "cause": causeCtrl.text,
                         "color": color,
                       });
                     });
-                    Navigator.pop(context);
+
+                    final service = Provider.of<DataService>(context, listen: false);
+                    await service.addRcaAnalysis(newIshikawa);
+
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                   }
                 },
                 child: const Text("Salvar", style: TextStyle(color: Colors.white)),

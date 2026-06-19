@@ -72,7 +72,9 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                           userAgentPackageName: 'com.example.steep',
                         ),
-                        // Caso a gente tenha poligonos no geofence data poderiamos adiciona-los aqui
+                        CircleLayer(
+                          circles: _buildMapCircles(),
+                        ),
                       ],
                     ),
                   ),
@@ -239,6 +241,36 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
         );
       },
     );
+  }
+
+  List<CircleMarker> _buildMapCircles() {
+    // Generate mock visual coordinates around the initial center based on the _geofences list
+    final baseLat = -19.8157;
+    final baseLng = -43.9542;
+    List<CircleMarker> markers = [];
+
+    for (int i = 0; i < _geofences.length; i++) {
+      final g = _geofences[i];
+      Color c = AppTheme.amareloVale;
+      if (g['severity'] == 'critical') c = AppTheme.alertaCritico;
+      if (g['severity'] == 'low') c = AppTheme.sucesso;
+
+      // Deslocamos levemente as posições para criar cercas simuladas
+      final latOffset = (i * 0.015);
+      final lngOffset = (i % 2 == 0) ? 0.01 : -0.01;
+
+      markers.add(
+        CircleMarker(
+          point: LatLng(baseLat + latOffset, baseLng + lngOffset),
+          color: c.withValues(alpha: 0.3),
+          borderColor: c,
+          borderStrokeWidth: 2,
+          radius: 1000, // 1km radius mock
+          useRadiusInMeter: true,
+        ),
+      );
+    }
+    return markers;
   }
 
   Widget _buildGeofenceCard(int index, String name, String limit, Color statusColor) {

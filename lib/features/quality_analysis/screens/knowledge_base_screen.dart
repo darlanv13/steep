@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../core/app_theme.dart';
+import '../../../core/providers/filter_provider.dart';
+import '../../../core/services/data_service.dart';
 
 class KnowledgeBaseScreen extends StatefulWidget {
   const KnowledgeBaseScreen({super.key});
@@ -12,41 +15,46 @@ class KnowledgeBaseScreen extends StatefulWidget {
 class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
 
-  // Mock data representing resolved Action Plans (Phase: Act)
-  final List<Map<String, dynamic>> _allLessons = [
-    {
-      "id": "POP-001",
-      "title": "Procedimento de Aspersão Pós-Chuva",
-      "area": "Rampa Sul",
-      "author": "João Silva",
-      "date": "15/11/2023",
-      "tags": ["Pista Úmida", "Frenagem", "Interlock"]
-    },
-    {
-      "id": "POP-002",
-      "title": "Ajuste de Carga de Escavadeira",
-      "area": "Mina Norte",
-      "author": "Marcos Paulo",
-      "date": "02/10/2023",
-      "tags": ["Sobrecarga", "Manutenção Preditiva"]
-    },
-    {
-      "id": "POP-003",
-      "title": "Protocolo de Alerta de Fadiga (DMS)",
-      "area": "CCO",
-      "author": "Ana Souza",
-      "date": "20/08/2023",
-      "tags": ["Fadiga", "DMS", "Segurança"]
-    },
-  ];
-
+  List<Map<String, dynamic>> _allLessons = [];
   List<Map<String, dynamic>> _filteredLessons = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _filteredLessons = _allLessons;
     _searchCtrl.addListener(_filterLessons);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final filter = Provider.of<FilterProvider>(context, listen: true);
+    _loadLessons(filter);
+  }
+
+  Future<void> _loadLessons(FilterProvider filter) async {
+    if (!mounted) return;
+
+    final service = Provider.of<DataService>(context, listen: false);
+    final plans = await service.getActionPlans(filter.shift, filter.fleet, filter.period);
+
+    if (mounted) {
+      setState(() {
+        _allLessons = plans.where((p) => p['pdcaPhase'] == 'Act').map((p) {
+           return {
+             "id": p['id'] ?? "ACT-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}",
+             "title": p['title'] ?? "Sem Título",
+             "area": p['fleet'] ?? "Geral",
+             "author": p['responsible'] ?? "Sistema",
+             "date": p['dueDate'] ?? "N/A",
+             "tags": ["PDCA", "Concluído", p['shift'] ?? "Geral"],
+           };
+        }).toList();
+
+        _filteredLessons = _allLessons;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -106,13 +114,17 @@ class _KnowledgeBaseScreenState extends State<KnowledgeBaseScreen> {
 
           // List View
           Expanded(
-            child: ListView.builder(
-              itemCount: _filteredLessons.length,
-              itemBuilder: (context, index) {
-                final lesson = _filteredLessons[index];
-                return _buildLessonCard(lesson);
-              },
-            ),
+            child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _filteredLessons.isEmpty
+              ? const Center(child: Text("Nenhuma lição aprendida (Fase Act) encontrada."))
+              : ListView.builder(
+                  itemCount: _filteredLessons.length,
+                  itemBuilder: (context, index) {
+                    final lesson = _filteredLessons[index];
+                    return _buildLessonCard(lesson);
+                  },
+                ),
           ),
         ],
       ),
