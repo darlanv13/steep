@@ -46,6 +46,14 @@ class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
     },
   ];
 
+  // Estado Ishikawa
+  final List<Map<String, dynamic>> _ishikawaCauses = [
+    {"category": "Máquina", "cause": "Falha sistêmica no ABS atestada via telemetria.", "color": AppTheme.amareloVale},
+    {"category": "Meio Ambiente", "cause": "Pista de minério umedecida reduzindo aderência.", "color": AppTheme.verdeEscuro},
+    {"category": "Mão de Obra", "cause": "Fadiga detectada pelo sistema DMS na 8ª hora.", "color": AppTheme.alertaCritico},
+    {"category": "Método", "cause": "Rotograma com limite de velocidade superestimado.", "color": AppTheme.amareloVale},
+  ];
+
   // Estado para o 5W2H
   final List<Map<String, dynamic>> _actions = [
     {
@@ -196,43 +204,38 @@ class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            FaIcon(
-                              FontAwesomeIcons.fishFins,
-                              color: AppTheme.verdeVale,
+                            const Row(
+                              children: [
+                                FaIcon(
+                                  FontAwesomeIcons.fishFins,
+                                  color: AppTheme.verdeVale,
+                                ),
+                                SizedBox(width: 12),
+                                Text(
+                                  "Diagrama de Ishikawa",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 12),
-                            Text(
-                              "Diagrama de Ishikawa",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            ElevatedButton.icon(
+                              onPressed: () => _showAddIshikawaDialog(),
+                              icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                              label: const Text("Adicionar Causa", style: TextStyle(color: Colors.white)),
                             ),
                           ],
                         ),
                         const SizedBox(height: 24),
-                        _buildFishboneCategory(
-                          "Máquina",
-                          "Falha sistêmica no ABS atestada via telemetria.",
-                          AppTheme.amareloVale,
-                        ),
-                        _buildFishboneCategory(
-                          "Meio Ambiente",
-                          "Pista de minério umedecida reduzindo aderência.",
-                          AppTheme.verdeEscuro,
-                        ),
-                        _buildFishboneCategory(
-                          "Mão de Obra",
-                          "Fadiga detectada pelo sistema DMS na 8ª hora.",
-                          AppTheme.alertaCritico,
-                        ),
-                        _buildFishboneCategory(
-                          "Método",
-                          "Rotograma com limite de velocidade superestimado.",
-                          AppTheme.amareloVale,
-                        ),
+                        ..._ishikawaCauses.map((i) => _buildFishboneCategory(
+                              i['category'],
+                              i['cause'],
+                              i['color'] as Color,
+                            )),
                         const SizedBox(height: 32),
                         const Divider(),
                         const Row(
@@ -646,6 +649,67 @@ class _AdvancedQualityScreenState extends State<AdvancedQualityScreen> {
                         "statusColor": AppTheme.alertaCritico,
                         "pdcaPhase": pdcaPhase,
                         "pdcaColor": pdcaPhase == "Plan" ? Colors.blue : (pdcaPhase == "Do" ? Colors.orange : (pdcaPhase == "Check" ? Colors.purple : AppTheme.sucesso)),
+                      });
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text("Salvar", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showAddIshikawaDialog() {
+    final causeCtrl = TextEditingController();
+    String category = "Máquina";
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text("Adicionar Causa - Ishikawa"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: category,
+                  decoration: const InputDecoration(labelText: "Categoria (6M)"),
+                  items: const [
+                    DropdownMenuItem(value: "Máquina", child: Text("Máquina")),
+                    DropdownMenuItem(value: "Mão de Obra", child: Text("Mão de Obra")),
+                    DropdownMenuItem(value: "Meio Ambiente", child: Text("Meio Ambiente")),
+                    DropdownMenuItem(value: "Método", child: Text("Método")),
+                    DropdownMenuItem(value: "Medida", child: Text("Medida")),
+                    DropdownMenuItem(value: "Material", child: Text("Material")),
+                  ],
+                  onChanged: (val) => setDialogState(() => category = val ?? "Máquina"),
+                ),
+                TextField(
+                  controller: causeCtrl,
+                  decoration: const InputDecoration(labelText: "Descrição da Causa"),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+              ElevatedButton(
+                onPressed: () {
+                  if (causeCtrl.text.isNotEmpty) {
+                    setState(() {
+                      Color color = AppTheme.textoSecundario;
+                      if (category == "Mão de Obra") color = AppTheme.alertaCritico;
+                      if (category == "Máquina" || category == "Método") color = AppTheme.amareloVale;
+                      if (category == "Meio Ambiente") color = AppTheme.verdeEscuro;
+
+                      _ishikawaCauses.add({
+                        "category": category,
+                        "cause": causeCtrl.text,
+                        "color": color,
                       });
                     });
                     Navigator.pop(context);

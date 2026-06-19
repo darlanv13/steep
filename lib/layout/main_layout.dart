@@ -14,6 +14,7 @@ import '../features/continuous_improvement/screens/risk_heatmap_screen.dart';
 import '../features/continuous_improvement/screens/cost_analysis_screen.dart';
 import '../features/maintenance/screens/predictive_maintenance_screen.dart';
 import '../features/cross_analytics/screens/cross_analytics_screen.dart';
+import '../features/quality_analysis/screens/knowledge_base_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -37,6 +38,7 @@ class _MainLayoutState extends State<MainLayout> {
     const CostAnalysisScreen(),
     const PredictiveMaintenanceScreen(),
     const CrossAnalyticsScreen(),
+    const KnowledgeBaseScreen(),
   ];
 
   Widget _buildDrawerContent() {
@@ -119,6 +121,11 @@ class _MainLayoutState extends State<MainLayout> {
                     10,
                     FontAwesomeIcons.networkWired,
                     "Cross-Analytics",
+                  ),
+                  _buildMenuItem(
+                    11,
+                    FontAwesomeIcons.bookOpenReader,
+                    "Lições Aprendidas",
                   ),
                 ],
               ),
