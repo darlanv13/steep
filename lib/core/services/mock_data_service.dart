@@ -56,17 +56,36 @@ class MockDataService implements DataService {
 
   @override
   Future<List<Map<String, dynamic>>> getChecklists(String shift, String fleet) async {
-    return [];
+    await Future.delayed(const Duration(milliseconds: 500));
+    return [
+      {"title": "Sistema de Freios", "description": "Verificar pressão e resposta", "isApproved": true},
+      {"title": "Pneus e Calibragem", "description": "Checar desgaste e pressão", "isApproved": true},
+      {"title": "Luzes e Sinalização", "description": "Faróis, setas e giroflex", "isApproved": false},
+      {"title": "Nível de Óleo", "description": "Motor e hidráulico", "isApproved": true},
+      {"title": "Cintos de Segurança", "description": "Trava e conservação", "isApproved": true},
+    ];
   }
 
   @override
   Future<List<Map<String, dynamic>>> getComplianceData(String fleet) async {
-    return [];
+    await Future.delayed(const Duration(milliseconds: 500));
+    return [
+      {"name": "Ana Souza (Operadora)", "status": "Aprovado/Válido", "statusColor": "success", "type": "driver"},
+      {"name": "João Silva (Operador)", "status": "Aprovado/Válido", "statusColor": "success", "type": "driver"},
+      {"name": "Marcos Paulo (Operador)", "status": "Vencido/Bloqueado", "statusColor": "critical", "type": "driver"},
+      {"name": "Caminhão CAT-793 (Frota)", "status": "Licenciamento Válido", "statusColor": "success", "type": "vehicle"},
+      {"name": "Escavadeira EX-02 (Frota)", "status": "Manutenção Atrasada", "statusColor": "warning", "type": "vehicle"},
+    ];
   }
 
   @override
   Future<List<Map<String, dynamic>>> getGeofences() async {
-    return [];
+    await Future.delayed(const Duration(milliseconds: 500));
+    return [
+      {"name": "Rampa Sul (Descida)", "limit": "30 km/h", "severity": "warning"},
+      {"name": "Área de Desmonte (Norte)", "limit": "20 km/h", "severity": "critical"},
+      {"name": "Pátio de Estacionamento", "limit": "15 km/h", "severity": "low"},
+    ];
   }
 
   @override
