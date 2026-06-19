@@ -20,49 +20,109 @@ class DriverScoreScreen extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                // Top 3 Condutores
+                // Coluna Esquerda: Pódio e Badges
                 Expanded(
                   flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppTheme.verdeEscuro,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        const FaIcon(
-                          FontAwesomeIcons.trophy,
-                          color: AppTheme.amareloVale,
-                          size: 48,
+                  child: Column(
+                    children: [
+                      // Pódio
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppTheme.verdeEscuro,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Destaques do Mês",
-                          style: TextStyle(
+                        child: Column(
+                          children: [
+                            const FaIcon(
+                              FontAwesomeIcons.trophy,
+                              color: AppTheme.amareloVale,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              "Destaques do Mês",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            _buildPodiumDriver(
+                              "1º Ana Souza",
+                              "98.5 pts",
+                              AppTheme.amareloVale,
+                            ),
+                            _buildPodiumDriver(
+                              "2º João Silva",
+                              "95.0 pts",
+                              Colors.grey[300]!,
+                            ),
+                            _buildPodiumDriver(
+                              "3º Carlos Mendes",
+                              "91.2 pts",
+                              const Color(0xFFCD7F32),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      // Badges/Conquistas
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
                             color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  FaIcon(FontAwesomeIcons.award, color: AppTheme.verdeVale),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    "Badges de Qualidade (RCA)",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Expanded(
+                                child: ListView(
+                                  children: [
+                                    _buildBadgeItem(
+                                      "Xerife da Qualidade",
+                                      "Participou ativamente de 5 análises Ishikawa/5 Porquês neste mês.",
+                                      FontAwesomeIcons.shieldHalved,
+                                      AppTheme.amareloVale,
+                                    ),
+                                    _buildBadgeItem(
+                                      "Mestre do Prazo",
+                                      "Concluiu 100% dos Planos de Ação (PDCA) dentro do prazo.",
+                                      FontAwesomeIcons.stopwatch,
+                                      AppTheme.sucesso,
+                                    ),
+                                    _buildBadgeItem(
+                                      "Olho de Águia",
+                                      "Identificou e registrou 10 anomalias no DMS preventivamente.",
+                                      FontAwesomeIcons.eye,
+                                      Colors.purple,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        _buildPodiumDriver(
-                          "1º Ana Souza",
-                          "98.5 pts",
-                          AppTheme.amareloVale,
-                        ),
-                        _buildPodiumDriver(
-                          "2º João Silva",
-                          "95.0 pts",
-                          Colors.grey[300]!,
-                        ),
-                        _buildPodiumDriver(
-                          "3º Carlos Mendes",
-                          "91.2 pts",
-                          const Color(0xFFCD7F32),
-                        ), // Bronze
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 32),
@@ -99,6 +159,37 @@ class DriverScoreScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBadgeItem(String title, String desc, FaIconData icon, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: color,
+            child: FaIcon(icon, color: Colors.white, size: 16),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+                const SizedBox(height: 4),
+                Text(desc, style: const TextStyle(fontSize: 12, color: AppTheme.textoSecundario)),
               ],
             ),
           ),

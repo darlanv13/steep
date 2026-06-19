@@ -96,4 +96,81 @@ class PdfService {
       onLayout: (PdfPageFormat format) async => pdf.save(),
     );
   }
+
+  static Future<void> generateActionPlanReport(Map<String, dynamic> plan) async {
+    final pdf = pw.Document();
+
+    final title = plan['title'] ?? 'Plano de Ação (PDCA)';
+    final responsible = plan['responsible'] ?? 'Não definido';
+    final status = plan['status'] ?? 'Não definido';
+    final progress = plan['progress'] ?? 0.0;
+    final dueDate = plan['dueDate'] ?? 'A definir';
+    final phase = plan['pdcaPhase'] ?? 'Plan';
+
+    final evidences = plan['evidences'] as List<String>? ?? [];
+    final studies = plan['studies'] as List<String>? ?? [];
+    final history = plan['history'] as List<String>? ?? [];
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return [
+            pw.Header(
+              level: 0,
+              child: pw.Text(
+                "Dossiê Avançado - Plano de Ação",
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text("Detalhes Principais", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Text("Título: $title"),
+            pw.Text("Responsável: $responsible"),
+            pw.Text("Status: $status"),
+            pw.Text("Fase PDCA: $phase"),
+            pw.Text("Prazo: $dueDate"),
+            pw.Text("Progresso Atual: ${(progress * 100).toInt()}%"),
+
+            pw.SizedBox(height: 20),
+            pw.Text("1. Evidências Anexadas", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16)),
+            pw.SizedBox(height: 10),
+            if (evidences.isEmpty) pw.Text("Nenhuma evidência anexada.")
+            else ...evidences.map((e) => pw.Bullet(text: e)),
+
+            pw.SizedBox(height: 20),
+            pw.Text("2. Estudos/Falhas (RCA) Vinculados", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16)),
+            pw.SizedBox(height: 10),
+            if (studies.isEmpty) pw.Text("Nenhum estudo vinculado.")
+            else ...studies.map((s) => pw.Bullet(text: s)),
+
+            pw.SizedBox(height: 20),
+            pw.Text("3. Histórico de Evolução", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16)),
+            pw.SizedBox(height: 10),
+            if (history.isEmpty) pw.Text("Nenhum histórico registrado.")
+            else ...history.map((h) => pw.Text(h, style: const pw.TextStyle(fontSize: 10))),
+
+            pw.SizedBox(height: 30),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.green),
+              ),
+              child: pw.Text(
+                "Documento gerado eletronicamente em: ${DateTime.now().toString()}",
+              ),
+            ),
+          ];
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
 }

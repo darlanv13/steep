@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/app_theme.dart';
 import '../../../core/providers/filter_provider.dart';
 import '../../../core/services/data_service.dart';
+import '../../../core/services/pdf_service.dart';
 
 class ActionPlanScreen extends StatefulWidget {
   const ActionPlanScreen({super.key});
@@ -19,6 +21,7 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
 
   List<Map<String, dynamic>> _plans = [];
   bool _isLoading = true;
+  bool _isKanbanView = false;
 
   @override
   void initState() {
@@ -151,6 +154,9 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
     // Em produção isso faria um PUT/Update via DataService.
     List<String> evidences = plan['evidences'] != null ? List<String>.from(plan['evidences']) : [];
     List<String> studies = plan['studies'] != null ? List<String>.from(plan['studies']) : [];
+    List<String> history = plan['history'] != null ? List<String>.from(plan['history']) : [
+      "[${DateTime.now().subtract(const Duration(days: 2)).toString().substring(0, 16)}] Plano Criado",
+    ];
     double currentProgress = (plan['progress'] ?? 0.0) as double;
     String currentPhase = plan['pdcaPhase'] ?? 'Plan';
 
@@ -181,7 +187,12 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                         DropdownMenuItem(value: "Act", child: Text("Act")),
                       ],
                       onChanged: (val) {
-                        if (val != null) setDialogState(() => currentPhase = val);
+                        if (val != null && val != currentPhase) {
+                          setDialogState(() {
+                            currentPhase = val;
+                            history.insert(0, "[${DateTime.now().toString().substring(0, 16)}] Fase alterada para $val");
+                          });
+                        }
                       },
                     ),
                     const SizedBox(height: 16),
@@ -192,25 +203,35 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                       max: 1,
                       divisions: 10,
                       activeColor: AppTheme.verdeVale,
+                      onChangeEnd: (val) {
+                         setDialogState(() {
+                           history.insert(0, "[${DateTime.now().toString().substring(0, 16)}] Progresso alterado para ${(val * 100).toInt()}%");
+                         });
+                      },
                       onChanged: (val) {
                         setDialogState(() => currentProgress = val);
                       },
                     ),
                     const Divider(height: 32),
-                    const Text("Evidências (Anexos)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const Text("Evidências (Anexos Reais)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
                     ...evidences.map((e) => ListTile(
                           leading: const FaIcon(FontAwesomeIcons.image, size: 16, color: AppTheme.verdeEscuro),
                           title: Text(e, style: const TextStyle(fontSize: 12)),
                         )),
                     ElevatedButton.icon(
-                      onPressed: () {
-                        setDialogState(() {
-                          evidences.add("evidencia_img_${DateTime.now().millisecondsSinceEpoch}.png");
-                        });
+                      onPressed: () async {
+                        final picker = ImagePicker();
+                        final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                        if (pickedFile != null) {
+                          setDialogState(() {
+                            evidences.add(pickedFile.name);
+                            history.insert(0, "[${DateTime.now().toString().substring(0, 16)}] Evidência anexada: ${pickedFile.name}");
+                          });
+                        }
                       },
                       icon: const Icon(Icons.upload_file, size: 16),
-                      label: const Text("Anexar Evidência"),
+                      label: const Text("Buscar da Galeria"),
                     ),
                     const Divider(height: 32),
                     const Text("Estudos e Falhas Associados (RCA)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -222,17 +243,58 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                     ElevatedButton.icon(
                       onPressed: () {
                         setDialogState(() {
-                          studies.add("Análise Ishikawa / 5 Porquês - #${DateTime.now().minute}");
+                          final newStudy = "Análise Ishikawa / 5 Porquês - #${DateTime.now().minute}";
+                          studies.add(newStudy);
+                          history.insert(0, "[${DateTime.now().toString().substring(0, 16)}] Estudo vinculado: $newStudy");
                         });
                       },
                       icon: const Icon(Icons.link, size: 16),
                       label: const Text("Vincular Estudo"),
+                    ),
+                    const Divider(height: 32),
+                    const Text("Linha do Tempo (Histórico)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: AppTheme.background,
+                        border: Border.all(color: Colors.black12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ListView.builder(
+                        itemCount: history.length,
+                        itemBuilder: (context, idx) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.history, size: 12, color: AppTheme.textoSecundario),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(history[idx], style: const TextStyle(fontSize: 12, color: AppTheme.textoPrincipal))),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
             actions: [
+              TextButton(
+                onPressed: () async {
+                   // Adicionamos os dados reais do plano que devem ser exportados (simulando que estão no DB)
+                   plan['pdcaPhase'] = currentPhase;
+                   plan['progress'] = currentProgress;
+                   plan['evidences'] = evidences;
+                   plan['studies'] = studies;
+                   plan['history'] = history;
+
+                   await PdfService.generateActionPlanReport(plan);
+                },
+                child: const Text("Exportar Dossiê do Plano (PDF)", style: TextStyle(color: AppTheme.verdeVale)),
+              ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text("Fechar"),
@@ -272,13 +334,27 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                   "Acompanhamento de Planos de Ação (RCA & Inspeções)",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                ElevatedButton.icon(
-                  onPressed: _showAddPlanModal,
-                  icon: const FaIcon(FontAwesomeIcons.plus, color: Colors.white),
-                  label: const Text("Novo Plano (PDCA)", style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.verdeVale,
-                  ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _isKanbanView = !_isKanbanView;
+                        });
+                      },
+                      icon: FaIcon(_isKanbanView ? FontAwesomeIcons.list : FontAwesomeIcons.tableColumns, color: AppTheme.verdeVale),
+                      tooltip: _isKanbanView ? "Mudar para Lista" : "Mudar para Kanban",
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton.icon(
+                      onPressed: _showAddPlanModal,
+                      icon: const FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 16),
+                      label: const Text("Novo Plano (PDCA)", style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.verdeVale,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -288,16 +364,76 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : _plans.isEmpty
                       ? const Center(child: Text("Nenhum plano encontrado para este filtro."))
-                      : ListView.builder(
-                          itemCount: _plans.length,
-                          itemBuilder: (context, index) {
-                            final p = _plans[index];
-                            return _buildPlanCard(p);
-                          },
-                        ),
+                      : _isKanbanView
+                          ? _buildKanbanBoard()
+                          : ListView.builder(
+                              itemCount: _plans.length,
+                              itemBuilder: (context, index) {
+                                final p = _plans[index];
+                                return _buildPlanCard(p);
+                              },
+                            ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildKanbanBoard() {
+    final planItems = _plans.where((p) => p['pdcaPhase'] == 'Plan').toList();
+    final doItems = _plans.where((p) => p['pdcaPhase'] == 'Do').toList();
+    final checkItems = _plans.where((p) => p['pdcaPhase'] == 'Check').toList();
+    final actItems = _plans.where((p) => p['pdcaPhase'] == 'Act').toList();
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _buildKanbanColumn("Plan", Colors.blue, planItems)),
+        const SizedBox(width: 16),
+        Expanded(child: _buildKanbanColumn("Do", Colors.orange, doItems)),
+        const SizedBox(width: 16),
+        Expanded(child: _buildKanbanColumn("Check", Colors.purple, checkItems)),
+        const SizedBox(width: 16),
+        Expanded(child: _buildKanbanColumn("Act", AppTheme.sucesso, actItems)),
+      ],
+    );
+  }
+
+  Widget _buildKanbanColumn(String title, Color color, List<Map<String, dynamic>> items) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: color.withValues(alpha: 0.5)),
+            ),
+            child: Text(
+              "$title (${items.length})",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold, color: color),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                return _buildPlanCard(items[index]);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
