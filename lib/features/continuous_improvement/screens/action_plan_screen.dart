@@ -300,10 +300,23 @@ class _ActionPlanScreenState extends State<ActionPlanScreen> {
                 child: const Text("Fechar"),
               ),
               ElevatedButton(
-                onPressed: () {
-                  // Aqui salvaria de volta no Provider/Parse Server
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Evolução salva com sucesso!")));
-                  Navigator.pop(context);
+                onPressed: () async {
+                  final service = Provider.of<DataService>(context, listen: false);
+                  final planId = plan['id'];
+                  if (planId != null) {
+                    await service.updateActionPlan(planId, {
+                      'pdcaPhase': currentPhase,
+                      'progress': currentProgress,
+                      'evidences': evidences,
+                      'studies': studies,
+                      'history': history,
+                    });
+                  }
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Evolução salva com sucesso!")));
+                    Navigator.pop(context);
+                  }
                 },
                 child: const Text("Salvar Evolução"),
               ),
