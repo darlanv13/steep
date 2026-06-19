@@ -82,12 +82,16 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                   else if (_checklists.isEmpty)
                     const Text("Nenhum item de checklist encontrado.")
                   else
-                    ..._checklists.map((c) => _buildChecklistItem(
-                      FontAwesomeIcons.check, // Pode ser dinâmico no futuro
-                      c['title'] ?? 'Sem Título',
-                      c['description'] ?? 'Sem descrição',
-                      c['isApproved'] ?? false,
-                    )),
+                    ...List.generate(_checklists.length, (index) {
+                      final c = _checklists[index];
+                      return _buildChecklistItem(
+                        index,
+                        FontAwesomeIcons.check,
+                        c['title'] ?? 'Sem Título',
+                        c['description'] ?? 'Sem descrição',
+                        c['isApproved'] ?? false,
+                      );
+                    }),
 
                   const SizedBox(height: 32),
                   SizedBox(
@@ -134,6 +138,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
   }
 
   Widget _buildChecklistItem(
+    int index,
     FaIconData icon,
     String title,
     String desc,
@@ -143,12 +148,13 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black12),
+        border: Border.all(color: isApproved ? Colors.black12 : AppTheme.alertaCritico.withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(12),
+        color: isApproved ? Colors.transparent : AppTheme.alertaCritico.withValues(alpha: 0.05),
       ),
       child: Row(
         children: [
-          FaIcon(icon, color: AppTheme.verdeVale),
+          FaIcon(isApproved ? icon : FontAwesomeIcons.triangleExclamation, color: isApproved ? AppTheme.verdeVale : AppTheme.alertaCritico),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -175,7 +181,11 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             value: isApproved,
             activeThumbColor: AppTheme.sucesso,
             inactiveThumbColor: AppTheme.alertaCritico,
-            onChanged: (val) {},
+            onChanged: (val) {
+              setState(() {
+                _checklists[index]['isApproved'] = val;
+              });
+            },
           ),
         ],
       ),

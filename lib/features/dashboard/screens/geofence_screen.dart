@@ -81,11 +81,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                     right: 20,
                     child: FloatingActionButton(
                       backgroundColor: AppTheme.verdeVale,
-                      onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Modo de desenho de cerca ativado.')),
-                          );
-                      },
+                      onPressed: _showAddGeofenceDialog,
                       child: const FaIcon(
                         FontAwesomeIcons.drawPolygon,
                         color: Colors.white,
@@ -114,11 +110,13 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                 else if (_geofences.isEmpty)
                   const Text("Nenhuma cerca ativa encontrada.")
                 else
-                  ..._geofences.map((g) {
+                  ...List.generate(_geofences.length, (index) {
+                    final g = _geofences[index];
                     Color c = AppTheme.amareloVale;
                     if (g['severity'] == 'critical') c = AppTheme.alertaCritico;
                     if (g['severity'] == 'low') c = AppTheme.sucesso;
                     return _buildGeofenceCard(
+                      index,
                       g['name'] ?? 'Sem Nome',
                       g['limit'] ?? 'N/A',
                       c,
@@ -143,16 +141,99 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
     );
   }
 
-  Widget _buildGeofenceCard(String name, String limit, Color statusColor) {
+  void _showAddGeofenceDialog() {
+    final nameCtrl = TextEditingController();
+    final limitCtrl = TextEditingController();
+    String severity = 'low';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text("Adicionar Nova Cerca"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Nome da Cerca (Área)")),
+                TextField(controller: limitCtrl, decoration: const InputDecoration(labelText: "Limite (ex: 40 km/h)")),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  initialValue: severity,
+                  decoration: const InputDecoration(labelText: "Severidade"),
+                  items: const [
+                    DropdownMenuItem(value: "low", child: Text("Baixa (Aviso)")),
+                    DropdownMenuItem(value: "warning", child: Text("Média (Atenção)")),
+                    DropdownMenuItem(value: "critical", child: Text("Crítica (Bloqueio)")),
+                  ],
+                  onChanged: (val) => setDialogState(() => severity = val ?? "low"),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+              ElevatedButton(
+                onPressed: () {
+                  if (nameCtrl.text.isNotEmpty && limitCtrl.text.isNotEmpty) {
+                    setState(() {
+                      _geofences.add({
+                        "name": nameCtrl.text,
+                        "limit": limitCtrl.text,
+                        "severity": severity,
+                      });
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text("Salvar"),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _showEditLimitDialog(int index, String currentLimit) {
+    final limitCtrl = TextEditingController(text: currentLimit);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Editar Limite de Velocidade"),
+          content: TextField(
+            controller: limitCtrl,
+            decoration: const InputDecoration(labelText: "Novo Limite (ex: 30 km/h)"),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+            ElevatedButton(
+              onPressed: () {
+                if (limitCtrl.text.isNotEmpty) {
+                  setState(() {
+                    _geofences[index]['limit'] = limitCtrl.text;
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Atualizar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGeofenceCard(int index, String name, String limit, Color statusColor) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: FaIcon(FontAwesomeIcons.mapLocationDot, color: statusColor),
         title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text("Limite: $limit"),
-        trailing: const FaIcon(
-          FontAwesomeIcons.ellipsisVertical,
-          color: AppTheme.textoSecundario,
+        trailing: IconButton(
+          icon: const FaIcon(FontAwesomeIcons.penToSquare, color: AppTheme.textoSecundario, size: 16),
+          onPressed: () => _showEditLimitDialog(index, limit),
         ),
       ),
     );
