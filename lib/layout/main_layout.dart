@@ -120,11 +120,6 @@ class _MainLayoutState extends State<MainLayout> {
                     FontAwesomeIcons.networkWired,
                     "Cross-Analytics",
                   ),
-                  _buildMenuItem(
-                    11,
-                    FontAwesomeIcons.database,
-                    "Cadastros / Qualidade",
-                  ),
                 ],
               ),
             ),
@@ -317,7 +312,11 @@ class _MainLayoutState extends State<MainLayout> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
-        leading: FaIcon(faIconData, size: 18, color: isActive ? Colors.white : Colors.white70),
+        leading: FaIcon(
+          faIconData,
+          size: 18,
+          color: isActive ? Colors.white : Colors.white70,
+        ),
         title: Text(
           title,
           style: TextStyle(
