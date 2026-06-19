@@ -116,6 +116,16 @@ class MockDataService implements DataService {
   ];
 
   @override
+  Future<Map<String, dynamic>> getDashboardKpis(String fleet, String shift, String period) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return {
+      "telemetryInfractions": "1.8%",
+      "dmsOccurrences": "0.12",
+      "mtbf": "380h",
+    };
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getActionPlans(String shift, String fleet, String period) async {
     // Simula tempo de rede
     await Future.delayed(const Duration(milliseconds: 500));

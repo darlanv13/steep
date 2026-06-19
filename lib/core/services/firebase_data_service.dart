@@ -7,6 +7,33 @@ class FirebaseDataService implements DataService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instanceFor(app: Firebase.app(), databaseId: 'steepdb');
 
   @override
+  Future<Map<String, dynamic>> getDashboardKpis(String fleet, String shift, String period) async {
+    try {
+      final snapshot = await _firestore
+          .collection('dashboard_kpis')
+          .where('shift', isEqualTo: shift)
+          .where('fleet', isEqualTo: fleet)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.data();
+      }
+      return {
+        "telemetryInfractions": "N/A",
+        "dmsOccurrences": "N/A",
+        "mtbf": "N/A",
+      };
+    } catch (e) {
+      return {
+        "telemetryInfractions": "N/A",
+        "dmsOccurrences": "N/A",
+        "mtbf": "N/A",
+      };
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getActionPlans(String shift, String fleet, String period) async {
     try {
       final snapshot = await _firestore

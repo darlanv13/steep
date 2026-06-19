@@ -4,10 +4,12 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class AnimatedStatusCard extends StatefulWidget {
   final String driverName;
   final String vehicleId;
+  final bool isCompliantInitial;
 
   const AnimatedStatusCard({super.key,
     required this.driverName,
     required this.vehicleId,
+    this.isCompliantInitial = true,
   });
 
   @override
@@ -15,7 +17,13 @@ class AnimatedStatusCard extends StatefulWidget {
 }
 
 class _AnimatedStatusCardState extends State<AnimatedStatusCard> {
-  bool isCompliant = true;
+  late bool isCompliant;
+
+  @override
+  void initState() {
+    super.initState();
+    isCompliant = widget.isCompliantInitial;
+  }
 
   @override
   Widget build(BuildContext context) {

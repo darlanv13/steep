@@ -1,4 +1,5 @@
 abstract class DataService {
+  Future<Map<String, dynamic>> getDashboardKpis(String fleet, String shift, String period);
   Future<List<Map<String, dynamic>>> getActionPlans(String shift, String fleet, String period);
   Future<void> addActionPlan(Map<String, dynamic> plan);
   Future<void> updateActionPlan(String id, Map<String, dynamic> updates);
